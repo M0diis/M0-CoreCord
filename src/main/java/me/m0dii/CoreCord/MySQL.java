@@ -129,6 +129,62 @@ public class MySQL
         int userID = getIDbyName(name);
     
         String table = getTableByAction(action);
+    
+        Statement st = connection.createStatement();
+    
+        if(table.contains("drop"))
+        {
+            String query = "SELECT " +
+            "co_item.time AS time, " +
+            "co_item.x, " +
+            "co_item.y, " +
+            "co_item.z, " +
+            "cmm.material, " +
+            "co_item.amount, " +
+            "cu.user as player, " +
+            "IF(co_item.action = 2, 'dropped', 'picked up') as action " +
+            "FROM co_item " +
+            "LEFT JOIN co_material_map cmm on co_item.type = cmm.id " +
+            "LEFT JOIN co_user cu on co_item.user = cu.rowid ";
+        
+            ResultSet result = st.executeQuery(query);
+        
+            while (result.next())
+            {
+                StringBuilder values = new StringBuilder();
+            
+                String date = getDateFromTimestamp(result.getString("time"));
+            
+                values.append(date)
+                        .append(" | ");
+            
+                values.append("X:")
+                        .append(result.getString("x"))
+                        .append(" ");
+            
+                values.append("Y:")
+                        .append(result.getString("y"))
+                        .append(" ");
+            
+                values.append("Z:")
+                        .append(result.getString("z"))
+                        .append(" ");
+            
+                values.append("\n")
+                        .append(result.getString("player"))
+                        .append(" ");
+            
+                values.append(result.getString("action"))
+                        .append(" ");
+            
+                values.append(result.getString("amount"))
+                        .append(" ");
+            
+                values.append(result.getString("material"));
+            
+                results.add(values.toString());
+            }
+        }
         
         if(table.contains("container"))
         {
@@ -140,14 +196,13 @@ public class MySQL
                 "cmm.material, " +
                 "co_container.rolled_back, " +
                 "IF(co_container.action = 0, 'removed', 'added') as action, " +
+                "co_container.amount, " +
                 "cu.user as player, " +
                 "cu.uuid as playeruuid " +
                 "FROM co_container " +
                 "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
                 "LEFT JOIN co_user cu on co_container.user = cu.rowid";
-    
-            Statement st = connection.createStatement();
-    
+            
             ResultSet result = st.executeQuery(query);
     
             while (result.next())
@@ -178,6 +233,9 @@ public class MySQL
                 values.append(result.getString("action"))
                         .append(" ");
     
+                values.append(result.getString("amount"))
+                        .append(" ");
+    
                 values.append(result.getString("material"));
     
                 results.add(values.toString());
@@ -205,8 +263,6 @@ public class MySQL
             if(actionType != -1)
                 query += " AND co_block.action = " + actionType;
             
-            Statement st = connection.createStatement();
-    
             ResultSet result = st.executeQuery(query);
     
             while (result.next())
@@ -248,8 +304,6 @@ public class MySQL
             String query = "SELECT * FROM co_command " +
             "WHERE from_unixtime(co_command.time) > CURRENT_TIMESTAMP - " + time + " " +
             "AND co_command.user = " + userID + ";";
-    
-            Statement st = connection.createStatement();
     
             ResultSet result = st.executeQuery(query);
     
