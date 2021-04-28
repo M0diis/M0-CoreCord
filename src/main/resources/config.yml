@@ -1,4 +1,4 @@
-# MySQL Configuration
+## MySQL Configuration
 # Make sure the values are the exact same
 # as in your CoreProtect config.
 # By default table prefix is co_
@@ -9,7 +9,7 @@ mysql-username: "database-user"
 # Leave '' if password not required
 mysql-password: "user-password"
 
-# Discord BOT Token
+## Discord BOT Token
 # https://discord.com/developers/applications
 discord-bot-token: "your-token"
 command-prefix: "co!"
@@ -20,3 +20,8 @@ command-prefix: "co!"
 allowed-roles:
   - 'role-one-id'
   - 'role-two-id'
+
+## Debugging
+# Only enable this if you are seeking help
+# and cannot find what's wrong
+debug: false

@@ -11,6 +11,8 @@ public class Config
     
     }
     
+    private boolean debugging;
+    
     private String host, database, username, password, tablePrefix;
     private int port;
     
@@ -37,24 +39,19 @@ public class Config
         this.database = getStr("mysql-database");
         this.username = getStr("mysql-username");
         this.password = getStr("mysql-password");
-        this.port = getInt("mysql-port");
+        this.port = this.cfg.getInt("mysql-port", 0);
         
         this.botToken = getStr("discord-bot-token");
         this.botPrefix = getStr("command-prefix");
         
         this.allowedRoles = cfg.getStringList("allowed-roles");
         
-        
+        this.debugging = cfg.getBoolean("debug");
     }
     
     private String getStr(String path)
     {
         return this.cfg.getString(path, "");
-    }
-    
-    private int getInt(String path)
-    {
-        return this.cfg.getInt(path, 0);
     }
     
     public String getHost()
@@ -95,5 +92,10 @@ public class Config
     public List<String> getAllowedRoles()
     {
         return this.allowedRoles;
+    }
+    
+    public boolean debugEnabled()
+    {
+        return this.debugging;
     }
 }

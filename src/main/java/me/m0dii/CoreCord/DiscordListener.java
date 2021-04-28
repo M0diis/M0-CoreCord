@@ -148,10 +148,11 @@ public class DiscordListener extends ListenerAdapter
                 }
                 catch(SQLException ex)
                 {
-                    ex.printStackTrace();
+                    if(this.cfg.debugEnabled())
+                        ex.printStackTrace();
+                    else
+                        plugin.getLogger().warning("SQL Exception has occurred..");
                 }
-                
-                
             }
         }
     }
@@ -177,8 +178,8 @@ public class DiscordListener extends ListenerAdapter
                 tempDigit = "";
             }
         }
-        
-        return total;
+    
+        return total < 0 ? 0 : total;
     }
     
     private boolean isDigit(String str)
@@ -194,20 +195,24 @@ public class DiscordListener extends ListenerAdapter
     
         switch(type.toLowerCase())
         {
-            case "s":
+            case "s": case "sec": case "seconds":
                 total += num;
                 break;
                 
-            case "m":
+            case "m": case "min": case "minutes":
                 total += num * 60;
                 break;
                 
-            case "h":
+            case "h": case "hour": case "hours":
                 total += num * 3600;
                 break;
                 
-            case "d":
+            case "d": case "day": case "days":
                 total += num * 86400;
+                break;
+    
+            case "w": case "week": case "weeks":
+                total += num * 604800;
                 break;
                 
             default:
@@ -217,8 +222,7 @@ public class DiscordListener extends ListenerAdapter
         return total;
     }
     
-    
-    void sendEmbed(MessageChannel ch, EmbedBuilder embed)
+    private void sendEmbed(MessageChannel ch, EmbedBuilder embed)
     {
         ch.sendMessage(embed.build()).queue();
     }

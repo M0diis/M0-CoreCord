@@ -45,7 +45,10 @@ public class CoSQL
         }
         catch(ClassNotFoundException ex)
         {
-            ex.printStackTrace();
+            if(this.cfg.debugEnabled())
+                ex.printStackTrace();
+            else
+                plugin.getLogger().info("Cannot find jdbc driver..");
         }
         
         try
@@ -58,6 +61,9 @@ public class CoSQL
         {
             plugin.getLogger().warning("Failed to connect to MySQL database.");
             plugin.getLogger().warning("Please check the config.");
+    
+            if(this.cfg.debugEnabled())
+                ex.printStackTrace();
         }
     }
     

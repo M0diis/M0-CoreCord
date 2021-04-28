@@ -38,7 +38,10 @@ public class CoreCord extends JavaPlugin
     
     public JDA getDiscord()
     {
-        return discord;
+        if(this.discord == null)
+            initializeDiscordBOT();
+        
+        return this.discord;
     }
     
     private CoSQL coSQL;
@@ -148,6 +151,9 @@ public class CoreCord extends JavaPlugin
         {
             this.warning("Discord BOT has failed to connect..");
             this.warning("Please check the configuration and make sure token is correct.");
+    
+            if(this.cfg.debugEnabled())
+                ex.printStackTrace();
         }
     }
     
