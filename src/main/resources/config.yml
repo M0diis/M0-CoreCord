@@ -1,0 +1,12 @@
+mysql-host: "host-name"
+mysql-port: 3306
+mysql-database: "database-name"
+mysql-username: "database-user"
+mysql-password: "user-password"
+
+discord-bot-token: "your-token"
+command-prefix: "!co"
+
+allowed-roles:
+  - 'role-one-id'
+  - 'role-two-id'

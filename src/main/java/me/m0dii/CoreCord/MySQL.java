@@ -1,0 +1,260 @@
+package me.m0dii.CoreCord;
+
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+public class MySQL
+{
+    static Connection connection;
+    
+    private String host, database, username, password;
+    private int port;
+    
+    private final Config cfg;
+    
+    private final CoreCord plugin;
+    
+    public MySQL(CoreCord plugin)
+    {
+        this.cfg = plugin.getCfg();
+        this.plugin = plugin;
+    
+        this.setUpMySQL();
+    }
+    
+    public void setUpMySQL()
+    {
+        this.host = cfg.getHost();
+        this.database = cfg.getDatabase();
+        this.username = cfg.getUsername();
+        this.password = cfg.getPassword();
+        this.port = cfg.getPort();
+        
+        this.connect();
+    }
+    
+    public void connect()
+    {
+        try
+        {
+            Class.forName("com.mysql.jdbc.Driver");
+        }
+        catch(ClassNotFoundException ex)
+        {
+            ex.printStackTrace();
+        }
+        
+        try
+        {
+            connection = DriverManager.getConnection(
+                    "jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database,
+                    this.username, this.password);
+        }
+        catch(SQLException ex)
+        {
+            plugin.getLogger().warning("Failed to connect to MySQL database.");
+            plugin.getLogger().warning("Please check the config.");
+        }
+    }
+    
+    private String getTableByAction(String action)
+    {
+        String table = "";
+        
+        switch(action.toLowerCase())
+        {
+            case "block":
+                table = "co_block";
+                break;
+    
+            case "command":
+                table = "co_command";
+                break;
+    
+            case "container":
+                table = "co_container";
+                break;
+                
+            case "drop":
+                table = "co_drop";
+                break;
+                
+            default:
+                break;
+        }
+        
+        return table;
+    }
+    
+    private int getIDbyName(String name) throws SQLException
+    {
+        if(connection.isClosed())
+            connect();
+        
+        String query = "SELECT co_command.user AS ID, cu.user as NAME FROM co_command" +
+        " LEFT JOIN co_user cu on co_command.user = cu.rowid";
+    
+        Statement st = connection.createStatement();
+    
+        ResultSet result = st.executeQuery(query);
+        
+        int userID = 0;
+    
+        if (result.next())
+            userID = result.getInt("ID");
+        
+        return userID;
+    }
+    
+    public List<String> lookUpData(String name, String action, long time) throws SQLException
+    {
+        if(connection.isClosed())
+            connect();
+        
+        List<String> results = new ArrayList<>();
+    
+        int userID = getIDbyName(name);
+    
+        String table = getTableByAction(action);
+        
+        plugin.getLogger().info(table);
+        plugin.getLogger().info(String.valueOf(userID));
+        
+        if(table.contains("block"))
+        {
+            String query = "SELECT " +
+                    "co_block.time AS time, " +
+                    "co_block.x, " +
+                    "co_block.y, " +
+                    "co_block.z, " +
+                    "cmm.material, " +
+                    "co_block.rolled_back, " +
+                    "IF(co_block.action = 0, 'destroyed', 'placed') as action, " +
+                    "cu.user as player, " +
+                    "cu.uuid as playeruuid " +
+                    "FROM co_block " +
+                    "LEFT JOIN co_material_map cmm on co_block.type = cmm.id " +
+                    "LEFT JOIN co_user cu on co_block.user = cu.rowid " +
+                    "WHERE from_unixtime(co_block.time) > CURRENT_TIMESTAMP - 1000 " +
+                    "AND co_block.user = " + userID + ";";
+    
+            Statement st = connection.createStatement();
+    
+            ResultSet result = st.executeQuery(query);
+    
+            while (result.next())
+            {
+                StringBuilder values = new StringBuilder();
+        
+                String date = getDateFromTimestamp(result.getString("time"));
+        
+                values.append(date)
+                        .append(" | ");
+        
+                values.append("X:")
+                        .append(result.getString("x"))
+                        .append(" ");
+        
+                values.append("Y:")
+                        .append(result.getString("y"))
+                        .append(" ");
+        
+                values.append("Z:")
+                        .append(result.getString("z"))
+                        .append(" ");
+    
+                values.append("\n")
+                        .append(result.getString("player"))
+                        .append(" ");
+    
+                values.append(result.getString("action"))
+                        .append(" ");
+        
+                values.append(result.getString("material"));
+        
+                results.add(values.toString());
+            }
+        }
+    
+        if(table.contains("command"))
+        {
+            String query = "SELECT * FROM co_command " +
+            "WHERE from_unixtime(co_command.time) > CURRENT_TIMESTAMP - " + time + " " +
+            "AND co_command.user = " + userID + ";";
+    
+            Statement st = connection.createStatement();
+    
+            ResultSet result = st.executeQuery(query);
+    
+            while (result.next())
+            {
+                StringBuilder values = new StringBuilder();
+    
+                String date = getDateFromTimestamp(result.getString("time"));
+                
+                values.append(date)
+                .append(" | ");
+                
+                values.append("X:")
+                    .append(result.getString("x"))
+                        .append(" ");
+                
+                values.append("Y:")
+                    .append(result.getString("y"))
+                    .append(" ");
+                
+                values.append("Z:")
+                    .append(result.getString("z"))
+                        .append(" ");
+                
+                values.append("\n")
+                    .append(result.getString("message"));
+                
+                results.add(values.toString());
+            }
+        }
+        
+        return results;
+    }
+    
+    private String getDateFromTimestamp(String timestamp)
+    {
+        Instant instant = Instant.ofEpochSecond(Long.parseLong(timestamp));
+    
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    
+        Date date = Date.from(instant);
+        
+        return format.format(date);
+    }
+    
+    public String getExecutedCommands(String name, int days) throws SQLException
+    {
+        if(connection.isClosed())
+            connect();
+        
+        int userID = getIDbyName(name);
+        
+        long time = 86400L * days;
+        
+        String query = "SELECT COUNT(*) AS AMOUNT FROM co_command" +
+                " WHERE from_unixtime(co_command.time) > CURRENT_TIMESTAMP - " + time +
+                " AND co_command.user = " + userID + ";";
+        
+        Statement st1 = connection.createStatement();
+        
+        ResultSet result1 = st1.executeQuery(query);
+        
+        if (result1.next())
+        {
+            return result1.getString("AMOUNT");
+        }
+        
+        return "0";
+    }
+}
