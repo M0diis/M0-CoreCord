@@ -16,9 +16,11 @@ command-prefix: "co!"
 
 # Unicode Emojis for embed page buttons
 # Leave them as it is if you don't know what you're doing
+# Dont go overboard with rows in one page
+rows-in-page: 5
 embed-page-left: '◀️️'
 embed-page-right: '▶️'
-embed-close: '🇽'
+embed-close: '❌'
 delete-on-close: false
 
 # Role IDs that are allowed to use the commands

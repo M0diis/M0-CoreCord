@@ -18,6 +18,7 @@ public class Config
     
     private String embedLeft, embedRight, embedClose;
     private boolean deleteOnClose;
+    private int rowsInPage;
     
     private String botToken, botPrefix;
     
@@ -42,7 +43,7 @@ public class Config
         this.database = getStr("mysql-database");
         this.username = getStr("mysql-username");
         this.password = getStr("mysql-password");
-        this.port = this.cfg.getInt("mysql-port", 0);
+        this.port = this.cfg.getInt("mysql-port", 3306);
         
         this.botToken = getStr("discord-bot-token");
         this.botPrefix = getStr("command-prefix");
@@ -51,10 +52,11 @@ public class Config
         
         this.debugging = cfg.getBoolean("debug");
         this.deleteOnClose = cfg.getBoolean("delete-on-close");
+        this.rowsInPage = cfg.getInt("rows-in-page", 5);
         
-        this.embedLeft = cfg.getString("embed-page-left");
-        this.embedRight = cfg.getString("embed-page-right");
-        this.embedClose = cfg.getString("embed-close");
+        this.embedLeft = getStr("embed-page-left");
+        this.embedRight = getStr("embed-page-right");
+        this.embedClose = getStr("embed-close");
     }
     
     private String getStr(String path)
@@ -125,5 +127,10 @@ public class Config
     public String getEmbedClose()
     {
         return this.embedClose;
+    }
+    
+    public int getRowsInPage()
+    {
+        return this.rowsInPage;
     }
 }

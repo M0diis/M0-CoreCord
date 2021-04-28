@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DiscordListener extends ListenerAdapter
@@ -99,6 +100,17 @@ public class DiscordListener extends ListenerAdapter
     
                 time = time.replace("t:", "");
                 time = time.replace("time:", "");
+
+                String filter = "";
+    
+                for(String arg : args)
+                    if(arg.startsWith("f:") || arg.startsWith("filter:"))
+                        filter = arg;
+    
+                filter = filter.replace("f:", "");
+                filter = filter.replace("filter:", "");
+    
+                List<String> filters = Arrays.asList(filter.split(","));
                 
                 try
                 {
@@ -115,6 +127,15 @@ public class DiscordListener extends ListenerAdapter
                         
                         return;
                     }
+                    
+                    if(args[args.length - 1].equalsIgnoreCase("#count"))
+                    {
+                        embed.setDescription("Found " + results.size() + " results.");
+                        
+                        sendEmbed(channel, embed);
+                        
+                        return;
+                    }
     
                     for(int i = results.size() - 1; i >= 0; i--)
                     {
@@ -123,19 +144,29 @@ public class DiscordListener extends ListenerAdapter
         
                         String date = split[0];
                         String values = split[1];
+                        
+                        if(filters.size() != 0)
+                        {
+                            String tempFilter = values.split("\n")[1].replace("/", "");
+                            
+                            if(!filters.contains(tempFilter))
+                                continue;
+                        }
         
                         embed.addField(date, values, false);
         
                         counter++;
         
-                        if(counter >= 5)
+                        if(counter >= this.cfg.getRowsInPage())
                         {
+                            embed.setFooter("Page " + (pages.size() + 1) + " • " +
+                                    e.getAuthor().getAsTag());
+                            
                             pages.add(new Page(PageType.EMBED, embed.build()));
             
                             embed = new EmbedBuilder();
             
                             embed.setAuthor("CoreCord")
-                                    .setFooter(e.getAuthor().getAsTag(), null)
                                     .setColor(Color.CYAN);
             
                             counter = 0;
