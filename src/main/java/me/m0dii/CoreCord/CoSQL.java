@@ -153,7 +153,9 @@ public class CoSQL
             "IF(co_item.action = 2, 'dropped', 'picked up') as action " +
             "FROM co_item " +
             "LEFT JOIN co_material_map cmm on co_item.type = cmm.id " +
-            "LEFT JOIN co_user cu on co_item.user = cu.rowid ";
+            "LEFT JOIN co_user cu on co_item.user = cu.rowid " +
+            "WHERE from_unixtime(co_container.time) > CURRENT_TIMESTAMP - " + time + " " +
+            "AND co_block.user = " + userID + " ";
     
             getResults(results, st, query);
         }
@@ -173,7 +175,9 @@ public class CoSQL
                 "cu.uuid as playeruuid " +
                 "FROM co_container " +
                 "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
-                "LEFT JOIN co_user cu on co_container.user = cu.rowid ";
+                "LEFT JOIN co_user cu on co_container.user = cu.rowid " +
+                "WHERE from_unixtime(co_container.time) > CURRENT_TIMESTAMP - " + time + " " +
+                "AND co_block.user = " + userID + " ";
     
             getResults(results, st, query);
         }
@@ -193,7 +197,7 @@ public class CoSQL
                     "FROM co_block " +
                     "LEFT JOIN co_material_map cmm on co_block.type = cmm.id " +
                     "LEFT JOIN co_user cu on co_block.user = cu.rowid " +
-                    "WHERE from_unixtime(co_block.time) > CURRENT_TIMESTAMP - 1000 " +
+                    "WHERE from_unixtime(co_block.time) > CURRENT_TIMESTAMP - " + time + " " +
                     "AND co_block.user = " + userID + " ";
             
             if(actionType != -1)
