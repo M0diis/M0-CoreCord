@@ -11,13 +11,11 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class DiscordListener extends ListenerAdapter
 {
-    private final MySQL coSQL;
+    private final CoSQL coSQL;
     private final CoreCord plugin;
     private final Config cfg;
     
@@ -58,7 +56,16 @@ public class DiscordListener extends ListenerAdapter
             
         if(args.length >= 2 && allowed)
         {
-            if(alias(cmd, "lookup, lu"))
+            if(alias(cmd, "reload"))
+            {
+                this.cfg.reload(this.plugin);
+                
+                embed.setDescription("Configuration has been reloaded.");
+                
+                sendEmbed(channel, embed);
+            }
+            
+            if(alias(cmd, "lookup, lu, l"))
             {
                 String user = "";
                 
@@ -102,7 +109,7 @@ public class DiscordListener extends ListenerAdapter
                     {
                         embed.setDescription("No results found.");
     
-                        sendMsg(channel, embed);
+                        sendEmbed(channel, embed);
                         
                         return;
                     }
@@ -136,11 +143,8 @@ public class DiscordListener extends ListenerAdapter
                     if(pages.size() == 0)
                         pages.add(new Page(PageType.EMBED, embed.build()));
                     
-                    channel.sendMessage((MessageEmbed) pages.get(0).getContent()).queue(success -> {
-                        Pages.paginate(success, pages);
-                    });
-                    
-                    //sendMsg(channel, embed);
+                    channel.sendMessage((MessageEmbed) pages.get(0).getContent())
+                            .queue(success -> Pages.paginate(success, pages));
                 }
                 catch(SQLException ex)
                 {
@@ -214,7 +218,7 @@ public class DiscordListener extends ListenerAdapter
     }
     
     
-    void sendMsg(MessageChannel ch, EmbedBuilder embed)
+    void sendEmbed(MessageChannel ch, EmbedBuilder embed)
     {
         ch.sendMessage(embed.build()).queue();
     }

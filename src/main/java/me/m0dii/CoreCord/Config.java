@@ -20,6 +20,14 @@ public class Config
     
     FileConfiguration cfg;
     
+    public void reload(CoreCord plugin)
+    {
+        plugin.reloadConfig();
+        this.cfg = plugin.getConfig();
+        
+        this.load(plugin);
+    }
+    
     public void load(CoreCord plugin)
     {
         this.cfg = plugin.getConfig();

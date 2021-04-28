@@ -7,12 +7,18 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.CustomChart;
+import org.bstats.charts.MultiLineChart;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.security.auth.login.LoginException;
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CoreCord extends JavaPlugin
 {
@@ -35,12 +41,12 @@ public class CoreCord extends JavaPlugin
         return discord;
     }
     
-    private MySQL coSQL;
+    private CoSQL coSQL;
     
-    public MySQL getCoSQL()
+    public CoSQL getCoSQL()
     {
         if(coSQL == null)
-            this.coSQL = new MySQL(this);
+            this.coSQL = new CoSQL(this);
         
         return this.coSQL;
     }
@@ -56,7 +62,21 @@ public class CoreCord extends JavaPlugin
     
         this.msgListener = new DiscordListener(this);
         
-        this.coSQL = new MySQL(this);
+        this.coSQL = new CoSQL(this);
+    
+        Metrics metrics = new Metrics(this, 11173);
+    
+        CustomChart c = new MultiLineChart("players_and_servers", () ->
+        {
+            Map<String, Integer> valueMap = new HashMap<>();
+        
+            valueMap.put("servers", 1);
+            valueMap.put("players", Bukkit.getOnlinePlayers().size());
+        
+            return valueMap;
+        });
+    
+        metrics.addCustomChart(c);
         
         initializeDiscordBOT();
     
@@ -75,6 +95,8 @@ public class CoreCord extends JavaPlugin
     {
         if(discord != null)
             this.discord.shutdownNow();
+    
+        info("M0-CoreCord has been disabled!");
     }
     
     private void prepareConfig()

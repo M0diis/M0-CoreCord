@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class MySQL
+public class CoSQL
 {
     static Connection connection;
     
@@ -18,7 +18,7 @@ public class MySQL
     
     private final CoreCord plugin;
     
-    public MySQL(CoreCord plugin)
+    public CoSQL(CoreCord plugin)
     {
         this.cfg = plugin.getCfg();
         this.plugin = plugin;
@@ -95,10 +95,10 @@ public class MySQL
         if(connection.isClosed())
             connect();
         
-        String query = "SELECT co_command.user AS ID, cu.user as name " +
+        String query = "SELECT co_command.user AS ID, cu.user as NAME " +
         "FROM co_command " +
         "LEFT JOIN co_user cu on co_command.user = cu.rowid " +
-        "AND cu.user = " + name + " " +
+        "AND cu.user = '" + name + "' " +
         "GROUP BY ID ";
     
         Statement st = connection.createStatement();
@@ -148,44 +148,8 @@ public class MySQL
             "FROM co_item " +
             "LEFT JOIN co_material_map cmm on co_item.type = cmm.id " +
             "LEFT JOIN co_user cu on co_item.user = cu.rowid ";
-        
-            ResultSet result = st.executeQuery(query);
-        
-            while (result.next())
-            {
-                StringBuilder values = new StringBuilder();
-            
-                String date = getDateFromTimestamp(result.getString("time"));
-            
-                values.append(date)
-                        .append(" | ");
-            
-                values.append("X:")
-                        .append(result.getString("x"))
-                        .append(" ");
-            
-                values.append("Y:")
-                        .append(result.getString("y"))
-                        .append(" ");
-            
-                values.append("Z:")
-                        .append(result.getString("z"))
-                        .append(" ");
-            
-                values.append("\n")
-                        .append(result.getString("player"))
-                        .append(" ");
-            
-                values.append(result.getString("action"))
-                        .append(" ");
-            
-                values.append(result.getString("amount"))
-                        .append(" ");
-            
-                values.append(result.getString("material"));
-            
-                results.add(values.toString());
-            }
+    
+            getResults(results, st, query);
         }
         
         if(table.contains("container"))
@@ -203,45 +167,9 @@ public class MySQL
                 "cu.uuid as playeruuid " +
                 "FROM co_container " +
                 "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
-                "LEFT JOIN co_user cu on co_container.user = cu.rowid";
-            
-            ResultSet result = st.executeQuery(query);
+                "LEFT JOIN co_user cu on co_container.user = cu.rowid ";
     
-            while (result.next())
-            {
-                StringBuilder values = new StringBuilder();
-    
-                String date = getDateFromTimestamp(result.getString("time"));
-    
-                values.append(date)
-                        .append(" | ");
-    
-                values.append("X:")
-                        .append(result.getString("x"))
-                        .append(" ");
-    
-                values.append("Y:")
-                        .append(result.getString("y"))
-                        .append(" ");
-    
-                values.append("Z:")
-                        .append(result.getString("z"))
-                        .append(" ");
-    
-                values.append("\n")
-                        .append(result.getString("player"))
-                        .append(" ");
-    
-                values.append(result.getString("action"))
-                        .append(" ");
-    
-                values.append(result.getString("amount"))
-                        .append(" ");
-    
-                values.append(result.getString("material"));
-    
-                results.add(values.toString());
-            }
+            getResults(results, st, query);
         }
         
         if(table.contains("block"))
@@ -338,6 +266,47 @@ public class MySQL
         }
         
         return results;
+    }
+    
+    private void getResults(List<String> results, Statement st, String query) throws SQLException
+    {
+        ResultSet result = st.executeQuery(query);
+        
+        while (result.next())
+        {
+            StringBuilder values = new StringBuilder();
+        
+            String date = getDateFromTimestamp(result.getString("time"));
+        
+            values.append(date)
+                    .append(" | ");
+        
+            values.append("X:")
+                    .append(result.getString("x"))
+                    .append(" ");
+        
+            values.append("Y:")
+                    .append(result.getString("y"))
+                    .append(" ");
+        
+            values.append("Z:")
+                    .append(result.getString("z"))
+                    .append(" ");
+        
+            values.append("\n")
+                    .append(result.getString("player"))
+                    .append(" ");
+        
+            values.append(result.getString("action"))
+                    .append(" ");
+        
+            values.append(result.getString("amount"))
+                    .append(" ");
+        
+            values.append(result.getString("material"));
+        
+            results.add(values.toString());
+        }
     }
     
     private String getDateFromTimestamp(String timestamp)
