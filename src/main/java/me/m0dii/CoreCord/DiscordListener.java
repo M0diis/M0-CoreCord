@@ -76,8 +76,8 @@ public class DiscordListener extends ListenerAdapter
                     if(arg.startsWith("u:") || arg.startsWith("user:"))
                         user = arg;
             
-                user = user.replace("u:", "");
-                user = user.replace("user:", "");
+                user = user.replace("u:", "")
+                    .replace("user:", "");
                 
                 String[] users = user.split(",");
     
@@ -87,8 +87,8 @@ public class DiscordListener extends ListenerAdapter
                     if(arg.startsWith("a:") || arg.startsWith("action:"))
                         action = arg;
     
-                action = action.replace("a:", "");
-                action = action.replace("action:", "");
+                action = action.replace("a:", "")
+                    .replace("action:", "");
     
                 String[] actions = action.split(",");
     
@@ -106,11 +106,16 @@ public class DiscordListener extends ListenerAdapter
                 for(String arg : args)
                     if(arg.startsWith("f:") || arg.startsWith("filter:"))
                         filter = arg;
+                    
+                filter = filter.trim().replace("f:", "")
+                        .replace("filter:", "");
     
-                filter = filter.replace("f:", "");
-                filter = filter.replace("filter:", "");
-    
-                List<String> filters = Arrays.asList(filter.split(","));
+                
+                
+                List<String> filters = new ArrayList<>();
+                
+                if(filter.trim().length() != 0 && !filter.isEmpty())
+                    filters = Arrays.asList(filter.trim().split(","));
                 
                 try
                 {
@@ -147,7 +152,8 @@ public class DiscordListener extends ListenerAdapter
                         
                         if(filters.size() != 0)
                         {
-                            String tempFilter = values.split("\n")[1].replace("/", "");
+                            String tempFilter = values.split("\n")[1]
+                                    .replace("/", "");
                             
                             if(!filters.contains(tempFilter))
                                 continue;
@@ -184,7 +190,12 @@ public class DiscordListener extends ListenerAdapter
                     if(this.cfg.debugEnabled())
                         ex.printStackTrace();
                     else
+                    {
                         plugin.getLogger().warning("SQL Exception has occurred..");
+                    }
+                    
+                    plugin.getLogger().warning("Attempting to reconnect..");
+                    coSQL.connect();
                 }
             }
         }

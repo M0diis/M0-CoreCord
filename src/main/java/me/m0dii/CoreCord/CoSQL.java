@@ -1,5 +1,9 @@
 package me.m0dii.CoreCord;
 
+
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
+
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -11,6 +15,7 @@ public class CoSQL
 {
     static Connection connection;
     
+    private boolean useMySQL;
     private String host, database, username, password;
     private int port;
     
@@ -23,11 +28,13 @@ public class CoSQL
         this.cfg = plugin.getCfg();
         this.plugin = plugin;
     
-        this.setUpMySQL();
+        this.setUpConnection();
     }
     
-    public void setUpMySQL()
+    public void setUpConnection()
     {
+        this.useMySQL = cfg.useMySQL();
+        
         this.host = cfg.getHost();
         this.database = cfg.getDatabase();
         this.username = cfg.getUsername();
@@ -39,27 +46,63 @@ public class CoSQL
     
     public void connect()
     {
-        try
+        if(useMySQL)
         {
-            Class.forName("com.mysql.jdbc.Driver");
+            try
+            {
+                Class.forName("com.mysql.jdbc.Driver");
+            }
+            catch(ClassNotFoundException ex)
+            {
+                if(this.cfg.debugEnabled())
+                    ex.printStackTrace();
+                else
+                    plugin.getLogger().info("Cannot find MySQL driver..");
+            }
         }
-        catch(ClassNotFoundException ex)
+        else
         {
-            if(this.cfg.debugEnabled())
-                ex.printStackTrace();
-            else
-                plugin.getLogger().info("Cannot find jdbc driver..");
+            try
+            {
+                Class.forName("org.sqlite.JDBC");
+            }
+            catch(ClassNotFoundException ex)
+            {
+                if(this.cfg.debugEnabled())
+                    ex.printStackTrace();
+                else
+                    plugin.getLogger().info("Cannot find SQLite driver..");
+            }
         }
         
         try
         {
-            connection = DriverManager.getConnection(
-                    "jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database,
-                    this.username, this.password);
+            if(useMySQL)
+            {
+                connection = DriverManager.getConnection(
+                        "jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database,
+                        this.username, this.password);
+            }
+            else
+            {
+                Plugin cp = Bukkit.getServer().getPluginManager().getPlugin("CoreProtect");
+    
+                if(cp != null)
+                {
+                    String dataFolder = cp.getDataFolder().toPath() + "\\" + "database.db";
+                    
+                    connection = DriverManager.getConnection("jdbc:sqlite:" + dataFolder);
+                }
+                else
+                {
+                    plugin.getLogger().warning("Failed to connect to SQLite database..");
+                }
+
+            }
         }
         catch(SQLException ex)
         {
-            plugin.getLogger().warning("Failed to connect to MySQL database.");
+            plugin.getLogger().warning("Failed to connect to the database.");
             plugin.getLogger().warning("Please check the config.");
     
             if(this.cfg.debugEnabled())
@@ -116,12 +159,14 @@ public class CoSQL
         if (result.next())
             userID = result.getInt("ID");
         
+        st.close();
+        
         return userID;
     }
     
     public List<String> lookUpData(String name, String action, long time) throws SQLException
     {
-        if(connection.isClosed())
+        if(connection == null || connection.isClosed())
             connect();
         
         List<String> results = new ArrayList<>();
@@ -139,7 +184,7 @@ public class CoSQL
         String table = getTableByAction(action);
     
         Statement st = connection.createStatement();
-    
+        
         if(table.contains("drop"))
         {
             String query = "SELECT " +
@@ -150,11 +195,11 @@ public class CoSQL
             "cmm.material, " +
             "co_item.amount, " +
             "cu.user as player, " +
-            "IF(co_item.action = 2, 'dropped', 'picked up') as action " +
+            "co_item.action as action " +
             "FROM co_item " +
             "LEFT JOIN co_material_map cmm on co_item.type = cmm.id " +
             "LEFT JOIN co_user cu on co_item.user = cu.rowid " +
-            "WHERE from_unixtime(co_item.time) > CURRENT_TIMESTAMP - " + time + " " +
+            "WHERE co_item.time > CURRENT_TIMESTAMP - " + time + " " +
             "AND co_item.user = " + userID + " ";
     
             getResults(results, st, query);
@@ -169,14 +214,14 @@ public class CoSQL
                 "co_container.z, " +
                 "cmm.material, " +
                 "co_container.rolled_back, " +
-                "IF(co_container.action = 0, 'removed', 'added') as action, " +
+                "co_container.action as action, " +
                 "co_container.amount, " +
                 "cu.user as player, " +
                 "cu.uuid as playeruuid " +
                 "FROM co_container " +
                 "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
                 "LEFT JOIN co_user cu on co_container.user = cu.rowid " +
-                "WHERE from_unixtime(co_container.time) > CURRENT_TIMESTAMP - " + time + " " +
+                "WHERE co_container.time > CURRENT_TIMESTAMP - " + time + " " +
                 "AND co_container.user = " + userID + " ";
     
             getResults(results, st, query);
@@ -191,26 +236,26 @@ public class CoSQL
                     "co_block.z, " +
                     "cmm.material, " +
                     "co_block.rolled_back, " +
-                    "IF(co_block.action = 0, 'destroyed', 'placed') as action, " +
+                    "co_block.action as action, " +
                     "cu.user as player, " +
                     "cu.uuid as playeruuid " +
                     "FROM co_block " +
                     "LEFT JOIN co_material_map cmm on co_block.type = cmm.id " +
                     "LEFT JOIN co_user cu on co_block.user = cu.rowid " +
-                    "WHERE from_unixtime(co_block.time) > CURRENT_TIMESTAMP - " + time + " " +
+                    "WHERE co_block.time > CURRENT_TIMESTAMP - " + time + " " +
                     "AND co_block.user = " + userID + " ";
             
             if(actionType != -1)
                 query += " AND co_block.action = " + actionType;
             
             ResultSet result = st.executeQuery(query);
-    
+            
             while (result.next())
             {
                 StringBuilder values = new StringBuilder();
-        
+                
                 String date = getDateFromTimestamp(result.getString("time"));
-        
+                
                 values.append(date)
                         .append(" | ");
         
@@ -225,28 +270,32 @@ public class CoSQL
                 values.append("Z:")
                         .append(result.getString("z"))
                         .append(" ");
-    
+                
                 values.append("\n")
                         .append(result.getString("player"))
                         .append(" ");
     
-                values.append(result.getString("action"))
-                        .append(" ");
-        
+                String ac = result.getString("action");
+                
+                if(ac.equals("0"))
+                    values.append("destroyed ");
+                if(ac.equals("1"))
+                    values.append("placed ");
+                
                 values.append(result.getString("material"));
         
                 results.add(values.toString());
             }
         }
-    
+        
         if(table.contains("command"))
         {
             String query = "SELECT * FROM co_command " +
-            "WHERE from_unixtime(co_command.time) > CURRENT_TIMESTAMP - " + time + " " +
+            "WHERE co_command.time > CURRENT_TIMESTAMP - " + time + " " +
             "AND co_command.user = " + userID + ";";
     
             ResultSet result = st.executeQuery(query);
-    
+            
             while (result.next())
             {
                 StringBuilder values = new StringBuilder();
@@ -275,6 +324,11 @@ public class CoSQL
             }
         }
         
+        st.close();
+        
+        if(!useMySQL)
+            connection.close();
+    
         return results;
     }
     
@@ -307,8 +361,16 @@ public class CoSQL
                     .append(result.getString("player"))
                     .append(" ");
         
-            values.append(result.getString("action"))
-                    .append(" ");
+            String ac = result.getString("action");
+            
+            if(ac.equals("0"))
+                values.append("added ");
+            if(ac.equals("1"))
+                values.append("removed ");
+            if(ac.equals("2"))
+                values.append("dropped up ");
+            if(ac.equals("3"))
+                values.append("picked up ");
         
             values.append(result.getString("amount"))
                     .append(" ");
@@ -340,7 +402,7 @@ public class CoSQL
         long time = 86400L * days;
         
         String query = "SELECT COUNT(*) AS AMOUNT FROM co_command" +
-                " WHERE from_unixtime(co_command.time) > CURRENT_TIMESTAMP - " + time +
+                " WHERE co_command.time > CURRENT_TIMESTAMP - " + time +
                 " AND co_command.user = " + userID + ";";
         
         Statement st1 = connection.createStatement();

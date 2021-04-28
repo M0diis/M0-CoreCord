@@ -19,6 +19,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.security.auth.login.LoginException;
 import java.io.*;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -100,6 +101,18 @@ public class CoreCord extends JavaPlugin
     {
         if(discord != null)
             this.discord.shutdownNow();
+        
+        if(CoSQL.connection != null)
+        {
+            try
+            {
+                CoSQL.connection.close();
+            }
+            catch(SQLException ex)
+            {
+                ex.printStackTrace();
+            }
+        }
     
         info("M0-CoreCord has been disabled!");
     }

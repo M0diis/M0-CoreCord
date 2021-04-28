@@ -13,6 +13,7 @@ public class Config
     
     private boolean debugging;
     
+    private boolean useMySQL;
     private String host, database, username, password, tablePrefix;
     private int port;
     
@@ -38,6 +39,8 @@ public class Config
     {
         this.cfg = plugin.getConfig();
         
+        this.useMySQL = cfg.getBoolean("use-mysql", true);
+        
         this.host = getStr("mysql-host");
         //this.tablePrefix = getStr("table-prefix");
         this.database = getStr("mysql-database");
@@ -57,6 +60,8 @@ public class Config
         this.embedLeft = getStr("embed-page-left");
         this.embedRight = getStr("embed-page-right");
         this.embedClose = getStr("embed-close");
+        
+        
     }
     
     private String getStr(String path)
@@ -132,5 +137,10 @@ public class Config
     public int getRowsInPage()
     {
         return this.rowsInPage;
+    }
+    
+    public boolean useMySQL()
+    {
+        return this.useMySQL;
     }
 }

@@ -2,6 +2,11 @@
 # Make sure the values are the exact same
 # as in your CoreProtect config.
 # By default table prefix is co_
+
+# You can also use SQLite, but I strongly recommend
+# using MySQL instead.
+
+use-mysql: true
 mysql-host: "host-name"
 mysql-port: 3306
 mysql-database: "database-name"
