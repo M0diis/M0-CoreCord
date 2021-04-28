@@ -16,6 +16,9 @@ public class Config
     private String host, database, username, password, tablePrefix;
     private int port;
     
+    private String embedLeft, embedRight, embedClose;
+    private boolean deleteOnClose;
+    
     private String botToken, botPrefix;
     
     private List<String> allowedRoles;
@@ -47,6 +50,11 @@ public class Config
         this.allowedRoles = cfg.getStringList("allowed-roles");
         
         this.debugging = cfg.getBoolean("debug");
+        this.deleteOnClose = cfg.getBoolean("delete-on-close");
+        
+        this.embedLeft = cfg.getString("embed-page-left");
+        this.embedRight = cfg.getString("embed-page-right");
+        this.embedClose = cfg.getString("embed-close");
     }
     
     private String getStr(String path)
@@ -97,5 +105,25 @@ public class Config
     public boolean debugEnabled()
     {
         return this.debugging;
+    }
+    
+    public String getEmbedLeft()
+    {
+        return this.embedLeft;
+    }
+    
+    public String getEmbedRight()
+    {
+        return this.embedRight;
+    }
+    
+    public boolean deleteOnClose()
+    {
+        return this.deleteOnClose;
+    }
+    
+    public String getEmbedClose()
+    {
+        return this.embedClose;
     }
 }

@@ -2,7 +2,9 @@ package me.m0dii.CoreCord;
 
 import com.github.ygimenez.exception.InvalidHandlerException;
 import com.github.ygimenez.method.Pages;
+import com.github.ygimenez.model.Paginator;
 import com.github.ygimenez.model.PaginatorBuilder;
+import com.github.ygimenez.type.Emote;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -143,7 +145,15 @@ public class CoreCord extends JavaPlugin
             
             this.discord.addEventListener(msgListener);
     
-            Pages.activate(PaginatorBuilder.createSimplePaginator(this.discord));
+            PaginatorBuilder paginator = PaginatorBuilder.createPaginator()
+                    .setHandler(this.discord)
+                    .shouldRemoveOnReact(true)
+                    .setEmote(Emote.CANCEL, this.cfg.getEmbedClose())
+                    .setEmote(Emote.NEXT, this.cfg.getEmbedRight())
+                    .setEmote(Emote.PREVIOUS, this.cfg.getEmbedLeft())
+                    .setDeleteOnCancel(this.cfg.deleteOnClose());
+            
+            Pages.activate(paginator.build());
             
             this.info("Logged in successfully as " + discord.getSelfUser().getAsTag());
         }

@@ -53,18 +53,20 @@ public class DiscordListener extends ListenerAdapter
         for(Role r : m.getRoles())
             if(allowedRoleIDS.contains(r.getId()))
                 allowed = true;
+    
+        if(alias(cmd, "reload"))
+        {
+            this.cfg.reload(this.plugin);
+        
+            embed.setDescription("Configuration has been reloaded.");
+        
+            sendEmbed(channel, embed);
+            
+            return;
+        }
             
         if(args.length >= 2 && allowed)
         {
-            if(alias(cmd, "reload"))
-            {
-                this.cfg.reload(this.plugin);
-                
-                embed.setDescription("Configuration has been reloaded.");
-                
-                sendEmbed(channel, embed);
-            }
-            
             if(alias(cmd, "lookup, lu, l"))
             {
                 String user = "";

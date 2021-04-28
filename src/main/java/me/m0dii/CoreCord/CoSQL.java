@@ -154,8 +154,8 @@ public class CoSQL
             "FROM co_item " +
             "LEFT JOIN co_material_map cmm on co_item.type = cmm.id " +
             "LEFT JOIN co_user cu on co_item.user = cu.rowid " +
-            "WHERE from_unixtime(co_container.time) > CURRENT_TIMESTAMP - " + time + " " +
-            "AND co_block.user = " + userID + " ";
+            "WHERE from_unixtime(co_item.time) > CURRENT_TIMESTAMP - " + time + " " +
+            "AND co_item.user = " + userID + " ";
     
             getResults(results, st, query);
         }
@@ -177,7 +177,7 @@ public class CoSQL
                 "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
                 "LEFT JOIN co_user cu on co_container.user = cu.rowid " +
                 "WHERE from_unixtime(co_container.time) > CURRENT_TIMESTAMP - " + time + " " +
-                "AND co_block.user = " + userID + " ";
+                "AND co_container.user = " + userID + " ";
     
             getResults(results, st, query);
         }

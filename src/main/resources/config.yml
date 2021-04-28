@@ -14,6 +14,13 @@ mysql-password: "user-password"
 discord-bot-token: "your-token"
 command-prefix: "co!"
 
+# Unicode Emojis for embed page buttons
+# Leave them as it is if you don't know what you're doing
+embed-page-left: '◀️️'
+embed-page-right: '▶️'
+embed-close: '🇽'
+delete-on-close: false
+
 # Role IDs that are allowed to use the commands
 # You have to have developer mode enabled on discord
 # and then you can right click on a role name and copy its ID.
