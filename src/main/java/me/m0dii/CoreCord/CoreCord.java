@@ -25,8 +25,6 @@ import java.util.Map;
 
 public class CoreCord extends JavaPlugin
 {
-    private static CoreCord instance;
-    
     private FileConfiguration fileCfg = null;
     private File configFile = null;
     private Config cfg;
@@ -59,8 +57,6 @@ public class CoreCord extends JavaPlugin
     
     public void onEnable()
     {
-        instance = this;
-    
         prepareConfig();
         
         this.cfg = new Config();

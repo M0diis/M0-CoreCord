@@ -102,6 +102,15 @@ public class DiscordListener extends ListenerAdapter
     
                 time = time.replace("t:", "");
                 time = time.replace("time:", "");
+    
+                if(time.length() == 0 || time.trim().isEmpty())
+                {
+                    embed.setDescription("Please specify time to lookup.");
+                    
+                    sendEmbed(channel, embed);
+                    
+                    return;
+                }
 
                 String filter = "";
     
@@ -112,7 +121,7 @@ public class DiscordListener extends ListenerAdapter
                 filter = filter.trim().replace("f:", "")
                         .replace("filter:", "");
     
-                
+
                 
                 List<String> filters = new ArrayList<>();
                 

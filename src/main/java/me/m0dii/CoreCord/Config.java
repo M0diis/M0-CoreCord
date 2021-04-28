@@ -21,6 +21,8 @@ public class Config
     private boolean deleteOnClose;
     private int rowsInPage;
     
+    private String dateFormat;
+    
     private String botToken, botPrefix;
     
     private List<String> allowedRoles;
@@ -61,7 +63,9 @@ public class Config
         this.embedRight = getStr("embed-page-right");
         this.embedClose = getStr("embed-close");
         
+        this.dateFormat = getStr("date-format");
         
+        Utils.setDateFormat(this.dateFormat);
     }
     
     private String getStr(String path)
