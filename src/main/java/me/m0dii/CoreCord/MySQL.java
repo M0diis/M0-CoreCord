@@ -4,7 +4,6 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -96,8 +95,11 @@ public class MySQL
         if(connection.isClosed())
             connect();
         
-        String query = "SELECT co_command.user AS ID, cu.user as NAME FROM co_command" +
-        " LEFT JOIN co_user cu on co_command.user = cu.rowid";
+        String query = "SELECT co_command.user AS ID, cu.user as name " +
+        "FROM co_command " +
+        "LEFT JOIN co_user cu on co_command.user = cu.rowid " +
+        "AND cu.user = " + name + " " +
+        "GROUP BY ID ";
     
         Statement st = connection.createStatement();
     
