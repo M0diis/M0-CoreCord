@@ -11,7 +11,7 @@ public class Config
     
     }
     
-    private String host, database, username, password;
+    private String host, database, username, password, tablePrefix;
     private int port;
     
     private String botToken, botPrefix;
@@ -25,6 +25,7 @@ public class Config
         this.cfg = plugin.getConfig();
         
         this.host = getStr("mysql-host");
+        //this.tablePrefix = getStr("table-prefix");
         this.database = getStr("mysql-database");
         this.username = getStr("mysql-username");
         this.password = getStr("mysql-password");
@@ -40,12 +41,12 @@ public class Config
     
     private String getStr(String path)
     {
-        return this.cfg.getString(path);
+        return this.cfg.getString(path, "");
     }
     
     private int getInt(String path)
     {
-        return this.cfg.getInt(path);
+        return this.cfg.getInt(path, 0);
     }
     
     public String getHost()

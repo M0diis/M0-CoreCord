@@ -66,7 +66,7 @@ public class MySQL
     {
         String table = "";
         
-        switch(action.toLowerCase())
+        switch(action.toLowerCase().replaceAll("[-+]", ""))
         {
             case "block":
                 table = "co_block";
@@ -117,13 +117,72 @@ public class MySQL
             connect();
         
         List<String> results = new ArrayList<>();
+        
+        int actionType = -1;
+        
+        if(action.charAt(0) == '-')
+            actionType = 0;
+    
+        if(action.charAt(0) == '+')
+            actionType = 1;
     
         int userID = getIDbyName(name);
     
         String table = getTableByAction(action);
         
-        plugin.getLogger().info(table);
-        plugin.getLogger().info(String.valueOf(userID));
+        if(table.contains("container"))
+        {
+            String query = "SELECT " +
+                "co_container.time AS time, " +
+                "co_container.x, " +
+                "co_container.y, " +
+                "co_container.z, " +
+                "cmm.material, " +
+                "co_container.rolled_back, " +
+                "IF(co_container.action = 0, 'removed', 'added') as action, " +
+                "cu.user as player, " +
+                "cu.uuid as playeruuid " +
+                "FROM co_container " +
+                "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
+                "LEFT JOIN co_user cu on co_container.user = cu.rowid";
+    
+            Statement st = connection.createStatement();
+    
+            ResultSet result = st.executeQuery(query);
+    
+            while (result.next())
+            {
+                StringBuilder values = new StringBuilder();
+    
+                String date = getDateFromTimestamp(result.getString("time"));
+    
+                values.append(date)
+                        .append(" | ");
+    
+                values.append("X:")
+                        .append(result.getString("x"))
+                        .append(" ");
+    
+                values.append("Y:")
+                        .append(result.getString("y"))
+                        .append(" ");
+    
+                values.append("Z:")
+                        .append(result.getString("z"))
+                        .append(" ");
+    
+                values.append("\n")
+                        .append(result.getString("player"))
+                        .append(" ");
+    
+                values.append(result.getString("action"))
+                        .append(" ");
+    
+                values.append(result.getString("material"));
+    
+                results.add(values.toString());
+            }
+        }
         
         if(table.contains("block"))
         {
@@ -141,8 +200,11 @@ public class MySQL
                     "LEFT JOIN co_material_map cmm on co_block.type = cmm.id " +
                     "LEFT JOIN co_user cu on co_block.user = cu.rowid " +
                     "WHERE from_unixtime(co_block.time) > CURRENT_TIMESTAMP - 1000 " +
-                    "AND co_block.user = " + userID + ";";
-    
+                    "AND co_block.user = " + userID + " ";
+            
+            if(actionType != -1)
+                query += " AND co_block.action = " + actionType;
+            
             Statement st = connection.createStatement();
     
             ResultSet result = st.executeQuery(query);

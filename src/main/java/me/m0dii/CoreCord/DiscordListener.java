@@ -125,7 +125,9 @@ public class DiscordListener extends ListenerAdapter
             
                             embed = new EmbedBuilder();
             
-                            embed.setAuthor("CoreCord").setFooter(e.getAuthor().getAsTag(), null).setColor(Color.CYAN);
+                            embed.setAuthor("CoreCord")
+                                    .setFooter(e.getAuthor().getAsTag(), null)
+                                    .setColor(Color.CYAN);
             
                             counter = 0;
                         }
