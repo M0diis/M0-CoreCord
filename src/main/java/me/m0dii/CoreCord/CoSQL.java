@@ -199,9 +199,9 @@ public class CoSQL
             "FROM co_item " +
             "LEFT JOIN co_material_map cmm on co_item.type = cmm.id " +
             "LEFT JOIN co_user cu on co_item.user = cu.rowid " +
-            "WHERE co_item.time > CURRENT_TIMESTAMP - " + time + " " +
+            "WHERE co_item.time > UNIX_TIMESTAMP() - " + time + " " +
             "AND co_item.user = " + userID + " ";
-    
+            
             getResults(results, st, query);
         }
         
@@ -221,9 +221,9 @@ public class CoSQL
                 "FROM co_container " +
                 "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
                 "LEFT JOIN co_user cu on co_container.user = cu.rowid " +
-                "WHERE co_container.time > CURRENT_TIMESTAMP - " + time + " " +
+                "WHERE co_container.time > UNIX_TIMESTAMP() - " + time + " " +
                 "AND co_container.user = " + userID + " ";
-    
+            
             getResults(results, st, query);
         }
         
@@ -242,11 +242,14 @@ public class CoSQL
                     "FROM co_block " +
                     "LEFT JOIN co_material_map cmm on co_block.type = cmm.id " +
                     "LEFT JOIN co_user cu on co_block.user = cu.rowid " +
-                    "WHERE co_block.time > CURRENT_TIMESTAMP - " + time + " " +
+                    "WHERE co_block.time > UNIX_TIMESTAMP() - " + time + " " +
                     "AND co_block.user = " + userID + " ";
             
             if(actionType != -1)
                 query += " AND co_block.action = " + actionType;
+    
+            if(!useMySQL)
+                query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
             
             ResultSet result = st.executeQuery(query);
             
@@ -291,8 +294,11 @@ public class CoSQL
         if(table.contains("command"))
         {
             String query = "SELECT * FROM co_command " +
-            "WHERE co_command.time > CURRENT_TIMESTAMP - " + time + " " +
+            "WHERE co_command.time > UNIX_TIMESTAMP() - " + time + " " +
             "AND co_command.user = " + userID + ";";
+    
+            if(!useMySQL)
+                query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
     
             ResultSet result = st.executeQuery(query);
             
@@ -334,6 +340,9 @@ public class CoSQL
     
     private void getResults(List<String> results, Statement st, String query) throws SQLException
     {
+        if(!useMySQL)
+            query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
+        
         ResultSet result = st.executeQuery(query);
         
         while (result.next())
@@ -364,9 +373,9 @@ public class CoSQL
             String ac = result.getString("action");
             
             if(ac.equals("0"))
-                values.append("added ");
-            if(ac.equals("1"))
                 values.append("removed ");
+            if(ac.equals("1"))
+                values.append("added ");
             if(ac.equals("2"))
                 values.append("dropped up ");
             if(ac.equals("3"))
@@ -402,8 +411,11 @@ public class CoSQL
         long time = 86400L * days;
         
         String query = "SELECT COUNT(*) AS AMOUNT FROM co_command" +
-                " WHERE co_command.time > CURRENT_TIMESTAMP - " + time +
+                " WHERE co_command.time > UNIX_TIMESTAMP() - " + time +
                 " AND co_command.user = " + userID + ";";
+    
+        if(!useMySQL)
+            query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
         
         Statement st1 = connection.createStatement();
         

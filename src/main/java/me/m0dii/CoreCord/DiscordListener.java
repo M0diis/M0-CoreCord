@@ -60,6 +60,8 @@ public class DiscordListener extends ListenerAdapter
             this.cfg.reload(this.plugin);
         
             embed.setDescription("Configuration has been reloaded.");
+            
+            coSQL.connect();
         
             sendEmbed(channel, embed);
             
