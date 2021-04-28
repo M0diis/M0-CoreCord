@@ -13,6 +13,7 @@ https://www.spigotmc.org/resources/m0-corecord.91805/
 Building is quite simple.
 
 Clone the repository or download the source code from releases.
+
 Make sure you have gradle installed and run `gradlew shadowjar`.
 
 ## Dev-builds
@@ -22,7 +23,7 @@ https://github.com/M0diis/M0-OnlinePlayersGUI/actions
 
 ## Usage & Discord
 
-You use this integration you (of course) have to have CoreProtect installed and have a Discord server.
+To use this integration you (of course) have to have CoreProtect installed and have a Discord server.
 
 You can find CoreProtect plugin here:
 https://www.spigotmc.org/resources/coreprotect.8631/
