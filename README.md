@@ -3,8 +3,7 @@
 # M0-CoreCord
 Discord integration for CoreProtect plugin.
 
-The integration currently works only with MySQL database
-Local file lookups will be implemented in the future.
+The integration works both SQLite and MySQL databases.
 
 Spigot page:
 https://www.spigotmc.org/resources/m0-corecord.91805/
