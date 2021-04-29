@@ -19,25 +19,27 @@ mysql-password: "user-password"
 discord-bot-token: "your-token"
 command-prefix: "co!"
 
-# Unicode Emojis for embed page buttons
+## Embed configuration
+# Embed page buttons use unicode symbols
 # Leave them as it is if you don't know what you're doing
-# Dont go overboard with rows in one page
+# Do not use high values for rows in one page
 
+# Date format uses Java SimpleDataFormat
+# https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
 date-format: "yyyy-MM-dd HH:mm:ss"
 delete-on-close: false
-embed-page-left: '◀️️'
-embed-page-right: '▶️'
+embed-page-left: '⬅️'
+embed-page-right: '➡️'
 embed-close: '❌'
 rows-in-page: 5
 
 # Role IDs that are allowed to use the commands
 # You have to have developer mode enabled on discord
-# and then you can right click on a role name and copy its ID.
+# To get the ID right click on the role and copy
 allowed-roles:
   - 'role-one-id'
   - 'role-two-id'
 
 ## Debugging
-# Only enable this if you are seeking help
-# and cannot find what's wrong
+# Only enable if you need to find out what's wrong
 debug: false

@@ -145,11 +145,13 @@ public class CoSQL
             connect();
         
         String query =
-        "SELECT co_command.user AS ID, cu.user as NAME " +
+        "SELECT * FROM" +
+        "(SELECT co_command.user AS ID, cu.user AS NAME " +
         "FROM co_command " +
-        "LEFT JOIN co_user cu on co_command.user = cu.rowid " +
+        "LEFT JOIN co_user cu ON co_command.user = cu.rowid " +
         "AND cu.user = '" + name + "' " +
-        "GROUP BY ID ";
+        "GROUP BY ID) AS `NAMES_IDS` " +
+        "WHERE NAME = '" + name + "' ";
     
         Statement st = connection.createStatement();
     
@@ -157,12 +159,43 @@ public class CoSQL
         
         int userID = 0;
     
-        if (result.next())
+        while (result.next())
+        {
             userID = result.getInt("ID");
+        }
         
         st.close();
         
         return userID;
+    }
+    
+    private List<Integer> getIDSbyNames(String[] names) throws SQLException
+    {
+        if(connection.isClosed())
+            connect();
+        
+        List<Integer> userIDS = new ArrayList<>();
+        
+        String query =
+        "SELECT co_command.user AS ID, cu.user as NAME " +
+        "FROM co_command " +
+        "LEFT JOIN co_user cu on co_command.user = cu.rowid ";
+        
+        for(String name : names)
+            query += "AND cu.user = '" + name + "' ";
+    
+        query += " GROUP BY ID;";
+        
+        Statement st = connection.createStatement();
+        
+        ResultSet result = st.executeQuery(query);
+        
+        if (result.next())
+            userIDS.add(result.getInt("ID"));
+        
+        st.close();
+        
+        return userIDS;
     }
     
     public List<String> lookUpData(String name, String action, long time) throws SQLException
@@ -180,6 +213,9 @@ public class CoSQL
             actionType = 1;
     
         int userID = getIDbyName(name);
+        
+        if(cfg.debugEnabled())
+            plugin.getLogger().info("Found user ID by name from database: " + userID);
     
         String table = getTableByAction(action);
     
@@ -202,7 +238,7 @@ public class CoSQL
             "LEFT JOIN co_user cu on co_item.user = cu.rowid " +
             "WHERE co_item.time > UNIX_TIMESTAMP() - " + time + " " +
             "AND co_item.user = " + userID + " ";
-            
+    
             getResults(results, st, query);
         }
         
@@ -346,6 +382,9 @@ public class CoSQL
     {
         if(!useMySQL)
             query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
+        
+        if(cfg.debugEnabled())
+            plugin.getLogger().info("Executing query: \n" + query);
         
         ResultSet result = st.executeQuery(query);
         

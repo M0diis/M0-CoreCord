@@ -55,7 +55,7 @@ public class DiscordListener extends ListenerAdapter
             if(allowedRoleIDS.contains(r.getId()))
                 allowed = true;
     
-        if(alias(cmd, "reload"))
+        if(alias(cmd, "reload") && allowed)
         {
             this.cfg.reload(this.plugin);
         
@@ -67,11 +67,53 @@ public class DiscordListener extends ListenerAdapter
             
             return;
         }
+    
+        if(alias(cmd, "testconnection") && allowed)
+        {
+            try
+            {
+                boolean connected = !CoSQL.connection.isClosed();
+                
+                if(connected)
+                {
+                    embed.setDescription("Connection is established successfully.");
+    
+                    sendEmbed(channel, embed);
+    
+                    return;
+                }
+                else
+                {
+                    embed.setDescription("Connection has not been found. Reconnecting..");
+    
+                    sendEmbed(channel, embed);
+    
+                    return;
+                }
+            }
+            catch(SQLException ex)
+            {
+                if(cfg.debugEnabled())
+                    ex.printStackTrace();
+    
+                embed.setDescription("Cannot find a connection to the database, reconnecting..");
+    
+                coSQL.connect();
+    
+                sendEmbed(channel, embed);
+                
+                return;
+            }
+        }
             
         if(args.length >= 2 && allowed)
         {
             if(alias(cmd, "lookup, lu, l"))
             {
+                if(cfg.debugEnabled())
+                    plugin.getLogger().info("Executing [ " + cmd + " ] command by " +
+                            "[ " + m.getUser().getAsTag() + " ] ");
+                
                 String user = "";
                 
                 for(String arg : args)
@@ -100,8 +142,9 @@ public class DiscordListener extends ListenerAdapter
                     if(arg.startsWith("t:") || arg.startsWith("time:"))
                         time = arg;
     
-                time = time.replace("t:", "");
-                time = time.replace("time:", "");
+                time = time.replace("t:", "")
+                    .replace("time:", "")
+                    .replace(",", "");
     
                 if(time.length() == 0 || time.trim().isEmpty())
                 {
@@ -120,8 +163,6 @@ public class DiscordListener extends ListenerAdapter
                     
                 filter = filter.trim().replace("f:", "")
                         .replace("filter:", "");
-    
-
                 
                 List<String> filters = new ArrayList<>();
                 

@@ -43,15 +43,15 @@ public class Config
         
         this.useMySQL = cfg.getBoolean("use-mysql", true);
         
-        this.host = getStr("mysql-host");
+        this.host = getStr("mysql-host", "localhost");
         //this.tablePrefix = getStr("table-prefix");
-        this.database = getStr("mysql-database");
-        this.username = getStr("mysql-username");
+        this.database = getStr("mysql-database", "database");
+        this.username = getStr("mysql-username", "root");
         this.password = getStr("mysql-password");
         this.port = this.cfg.getInt("mysql-port", 3306);
         
         this.botToken = getStr("discord-bot-token");
-        this.botPrefix = getStr("command-prefix");
+        this.botPrefix = getStr("command-prefix", "co!");
         
         this.allowedRoles = cfg.getStringList("allowed-roles");
         
@@ -71,6 +71,11 @@ public class Config
     private String getStr(String path)
     {
         return this.cfg.getString(path, "");
+    }
+    
+    private String getStr(String path, String def)
+    {
+        return this.cfg.getString(path, def);
     }
     
     public String getHost()
@@ -120,11 +125,17 @@ public class Config
     
     public String getEmbedLeft()
     {
+        if(this.embedLeft.isEmpty())
+            return "⬅️";
+        
         return this.embedLeft;
     }
     
     public String getEmbedRight()
     {
+        if(this.embedLeft.isEmpty())
+            return "➡️️";
+        
         return this.embedRight;
     }
     

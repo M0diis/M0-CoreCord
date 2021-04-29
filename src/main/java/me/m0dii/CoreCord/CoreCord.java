@@ -124,16 +124,6 @@ public class CoreCord extends JavaPlugin
     
             this.copy(this.getResource("config.yml"), this.configFile);
         }
-        
-        try
-        {
-            this.getConfig().options().copyDefaults(true);
-            this.getConfig().save(this.configFile);
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
     
         this.fileCfg = YamlConfiguration.loadConfiguration(this.configFile);
     }
@@ -143,11 +133,6 @@ public class CoreCord extends JavaPlugin
         try
         {
             this.discord = JDABuilder.createDefault(cfg.getBotToken())
-                    .enableIntents(
-                            GatewayIntent.GUILD_MEMBERS,
-                            GatewayIntent.GUILD_MESSAGES
-                    )
-                    .setMemberCachePolicy(MemberCachePolicy.ALL)
                     .build();
             
             this.discord.awaitReady();
