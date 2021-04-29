@@ -154,6 +154,11 @@ public class Config
         return this.rowsInPage;
     }
     
+    public String getDateFormat()
+    {
+        return this.dateFormat;
+    }
+    
     public boolean useMySQL()
     {
         return this.useMySQL;

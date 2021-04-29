@@ -2,13 +2,10 @@ package me.m0dii.CoreCord;
 
 import com.github.ygimenez.exception.InvalidHandlerException;
 import com.github.ygimenez.method.Pages;
-import com.github.ygimenez.model.Paginator;
 import com.github.ygimenez.model.PaginatorBuilder;
 import com.github.ygimenez.type.Emote;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.CustomChart;
 import org.bstats.charts.MultiLineChart;
@@ -18,7 +15,10 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.security.auth.login.LoginException;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;

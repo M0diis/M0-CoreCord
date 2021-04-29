@@ -19,8 +19,9 @@ public class Utils
         
         Date date = Date.from(instant);
         
+        if(sdf == null)
+            sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        
         return sdf.format(date);
     }
-    
-    
 }

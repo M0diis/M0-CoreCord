@@ -78,18 +78,17 @@ public class DiscordListener extends ListenerAdapter
                 {
                     embed.setDescription("Connection is established successfully.");
     
-                    sendEmbed(channel, embed);
-    
-                    return;
                 }
                 else
                 {
                     embed.setDescription("Connection has not been found. Reconnecting..");
     
-                    sendEmbed(channel, embed);
-    
-                    return;
+                    coSQL.connect();
                 }
+                
+                sendEmbed(channel, embed);
+                
+                return;
             }
             catch(SQLException ex)
             {
