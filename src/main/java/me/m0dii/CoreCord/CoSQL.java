@@ -1,14 +1,10 @@
 package me.m0dii.CoreCord;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class CoSQL
@@ -149,13 +145,16 @@ public class CoSQL
         "(SELECT co_command.user AS ID, cu.user AS NAME " +
         "FROM co_command " +
         "LEFT JOIN co_user cu ON co_command.user = cu.rowid " +
-        "AND cu.user = '" + name + "' " +
+        "AND cu.user = ? " +
         "GROUP BY ID) AS `NAMES_IDS` " +
-        "WHERE NAME = '" + name + "' ";
+        "WHERE NAME = ? ";
     
-        Statement st = connection.createStatement();
+        PreparedStatement pst = connection.prepareStatement(query);
+        
+        pst.setString(1, name);
+        pst.setString(2, name);
     
-        ResultSet result = st.executeQuery(query);
+        ResultSet result = pst.executeQuery(query);
         
         int userID = 0;
     
@@ -164,7 +163,7 @@ public class CoSQL
             userID = result.getInt("ID");
         }
         
-        st.close();
+        pst.close();
         
         return userID;
     }
@@ -218,8 +217,6 @@ public class CoSQL
             plugin.getLogger().info("Found user ID by name from database: " + userID);
     
         String table = getTableByAction(action);
-    
-        Statement st = connection.createStatement();
         
         if(table.contains("drop"))
         {
@@ -236,10 +233,10 @@ public class CoSQL
             "FROM co_item " +
             "LEFT JOIN co_material_map cmm on co_item.type = cmm.id " +
             "LEFT JOIN co_user cu on co_item.user = cu.rowid " +
-            "WHERE co_item.time > UNIX_TIMESTAMP() - " + time + " " +
-            "AND co_item.user = " + userID + " ";
+            "WHERE co_item.time > UNIX_TIMESTAMP() - ? " +
+            "AND co_item.user = ? ";
     
-            getResults(results, st, query);
+            getResults(results, query, time, userID);
         }
         
         if(table.contains("container"))
@@ -259,10 +256,10 @@ public class CoSQL
             "FROM co_container " +
             "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
             "LEFT JOIN co_user cu on co_container.user = cu.rowid " +
-            "WHERE co_container.time > UNIX_TIMESTAMP() - " + time + " " +
-            "AND co_container.user = " + userID + " ";
+            "WHERE co_container.time > UNIX_TIMESTAMP() - ? " +
+            "AND co_container.user = ? ";
             
-            getResults(results, st, query);
+            getResults(results, query, time, userID);
         }
         
         if(table.contains("block"))
@@ -281,8 +278,8 @@ public class CoSQL
             "FROM co_block " +
             "LEFT JOIN co_material_map cmm on co_block.type = cmm.id " +
             "LEFT JOIN co_user cu on co_block.user = cu.rowid " +
-            "WHERE co_block.time > UNIX_TIMESTAMP() - " + time + " " +
-            "AND co_block.user = " + userID + " ";
+            "WHERE co_block.time > UNIX_TIMESTAMP() - ? " +
+            "AND co_block.user = ? ";
             
             if(actionType != -1)
                 query += " AND co_block.action = " + actionType;
@@ -290,7 +287,12 @@ public class CoSQL
             if(!useMySQL)
                 query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
             
-            ResultSet result = st.executeQuery(query);
+            PreparedStatement pst = connection.prepareStatement(query);
+            
+            pst.setLong(1, time);
+            pst.setInt(2, userID);
+            
+            ResultSet result = pst.executeQuery(query);
             
             while (result.next())
             {
@@ -334,13 +336,18 @@ public class CoSQL
         {
             String query =
             "SELECT * FROM co_command " +
-            "WHERE co_command.time > UNIX_TIMESTAMP() - " + time + " " +
-            "AND co_command.user = " + userID + ";";
+            "WHERE co_command.time > UNIX_TIMESTAMP() - ? " +
+            "AND co_command.user = ?;";
     
             if(!useMySQL)
                 query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
-    
-            ResultSet result = st.executeQuery(query);
+            
+            PreparedStatement pst = connection.prepareStatement(query);
+            
+            pst.setLong(1, time);
+            pst.setInt(2, userID);
+            
+            ResultSet result = pst.executeQuery();
             
             while (result.next())
             {
@@ -370,23 +377,27 @@ public class CoSQL
             }
         }
         
-        st.close();
-        
         if(!useMySQL)
             connection.close();
     
         return results;
     }
     
-    private void getResults(List<String> results, Statement st, String query) throws SQLException
+    private void getResults(List<String> results, String query,
+                            long time, int userID) throws SQLException
     {
         if(!useMySQL)
             query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
         
+        PreparedStatement pst = connection.prepareStatement(query);
+        
+        pst.setLong(1, time);
+        pst.setInt(2, userID);
+        
         if(cfg.debugEnabled())
             plugin.getLogger().info("Executing query: \n" + query);
         
-        ResultSet result = st.executeQuery(query);
+        ResultSet result = pst.executeQuery();
         
         while (result.next())
         {
