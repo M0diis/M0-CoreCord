@@ -27,6 +27,8 @@ command-prefix: "co!"
 # Date format uses Java SimpleDataFormat
 # https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
 date-format: "yyyy-MM-dd HH:mm:ss"
+# Whether to delete the embed when close button pressed
+# If false, it will only hide the buttons.
 delete-on-close: false
 embed-page-left: '⬅️'
 embed-page-right: '➡️'
@@ -45,4 +47,5 @@ allowed-roles:
 
 ## Debugging
 # Only enable if you need to find out what's wrong
+# Sends a lot of extra messages to the console
 debug: false

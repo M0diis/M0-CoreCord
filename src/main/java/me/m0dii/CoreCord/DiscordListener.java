@@ -112,12 +112,39 @@ public class DiscordListener extends ListenerAdapter
                 if(cfg.debugEnabled())
                     plugin.getLogger().info("Executing [ " + cmd + " ] command by " +
                             "[ " + m.getUser().getAsTag() + " ] ");
+    
+                String time = "";
+    
+                for(String arg : args)
+                    if(arg.startsWith("t:") || arg.startsWith("time:"))
+                    {
+                        time = arg;
+                        
+                        break;
+                    }
+    
+                time = time.replace("t:", "")
+                        .replace("time:", "")
+                        .replace(",", "");
+    
+                if(time.length() == 0 || time.trim().isEmpty())
+                {
+                    embed.setDescription("Please specify time to lookup.");
+        
+                    sendEmbed(channel, embed);
+        
+                    return;
+                }
                 
                 String user = "";
                 
                 for(String arg : args)
                     if(arg.startsWith("u:") || arg.startsWith("user:"))
+                    {
                         user = arg;
+                        
+                        break;
+                    }
             
                 user = user.replace("u:", "")
                     .replace("user:", "");
@@ -128,37 +155,26 @@ public class DiscordListener extends ListenerAdapter
     
                 for(String arg : args)
                     if(arg.startsWith("a:") || arg.startsWith("action:"))
+                    {
                         action = arg;
+                        
+                        break;
+                    }
     
                 action = action.replace("a:", "")
                     .replace("action:", "");
     
                 String[] actions = action.split(",");
-    
-                String time = "";
-    
-                for(String arg : args)
-                    if(arg.startsWith("t:") || arg.startsWith("time:"))
-                        time = arg;
-    
-                time = time.replace("t:", "")
-                    .replace("time:", "")
-                    .replace(",", "");
-    
-                if(time.length() == 0 || time.trim().isEmpty())
-                {
-                    embed.setDescription("Please specify time to lookup.");
-                    
-                    sendEmbed(channel, embed);
-                    
-                    return;
-                }
-
+                
                 String filter = "";
     
                 for(String arg : args)
                     if(arg.startsWith("f:") || arg.startsWith("filter:"))
+                    {
                         filter = arg;
+                        
+                        break;
+                    }
                     
                 filter = filter.trim().replace("f:", "")
                         .replace("filter:", "");
@@ -167,6 +183,17 @@ public class DiscordListener extends ListenerAdapter
                 
                 if(filter.trim().length() != 0 && !filter.isEmpty())
                     filters = Arrays.asList(filter.trim().split(","));
+                
+                boolean reverse = false;
+                
+                for(String arg : args)
+                    if(arg.equalsIgnoreCase("-r")
+                        || arg.equalsIgnoreCase("-reverse"))
+                    {
+                        reverse = true;
+                        
+                        break;
+                    }
                 
                 try
                 {
@@ -192,8 +219,8 @@ public class DiscordListener extends ListenerAdapter
                         
                         return;
                     }
-    
-                    for(int i = results.size() - 1; i >= 0; i--)
+                    
+                    for(int i = reverse ? results.size() - 1 : 0; reverse ?  i >= 0 : i < results.size();)
                     {
                         String r = results.get(i);
                         String[] split = r.split(" \\| ");
@@ -231,6 +258,10 @@ public class DiscordListener extends ListenerAdapter
             
                             counter = 0;
                         }
+    
+                        if(reverse)
+                            i--;
+                        else i++;
                     }
                     
                     if(pages.size() == 0)

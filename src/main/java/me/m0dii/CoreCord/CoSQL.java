@@ -317,10 +317,9 @@ public class CoSQL
         
                     values.append("Z:")
                             .append(result.getString("z"))
-                            .append(" ");
+                            .append("\n");
         
-                    values.append("\n")
-                            .append(result.getString("player"))
+                    values.append(result.getString("player"))
                             .append(" ");
         
                     String ac = result.getString("action");
@@ -373,10 +372,9 @@ public class CoSQL
         
                     values.append("Z:")
                             .append(result.getString("z"))
-                            .append(" ");
+                            .append("\n");
         
-                    values.append("\n")
-                            .append(result.getString("message"));
+                    values.append(result.getString("message"));
         
                     results.add(values.toString());
                 }
@@ -400,9 +398,6 @@ public class CoSQL
         pst.setLong(1, time);
         pst.setInt(2, userID);
         
-        if(cfg.debugEnabled())
-            plugin.getLogger().info("Executing query: \n" + query);
-        
         try(ResultSet result = pst.executeQuery())
         {
             while (result.next())
@@ -424,10 +419,9 @@ public class CoSQL
         
                 values.append("Z:")
                         .append(result.getString("z"))
-                        .append(" ");
+                        .append("\n ");
         
-                values.append("\n")
-                        .append(result.getString("player"))
+                values.append(result.getString("player"))
                         .append(" ");
         
                 String ac = result.getString("action");

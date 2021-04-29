@@ -102,7 +102,13 @@ public class CoreCord extends JavaPlugin
         {
             try
             {
-                CoSQL.connection.close();
+                if(!CoSQL.connection.isClosed())
+                {
+                    CoSQL.connection.close();
+    
+                    info("SQL connection has been closed successfully.");
+                }
+
             }
             catch(SQLException ex)
             {
@@ -149,12 +155,12 @@ public class CoreCord extends JavaPlugin
             
             Pages.activate(paginator.build());
             
-            this.info("Logged in successfully as " + discord.getSelfUser().getAsTag());
+            info("Logged in successfully as " + discord.getSelfUser().getAsTag());
         }
         catch(LoginException | InterruptedException | InvalidHandlerException ex)
         {
-            this.warning("Discord BOT has failed to connect..");
-            this.warning("Please check the configuration and make sure token is correct.");
+            warning("Discord BOT has failed to connect..");
+            warning("Please check the configuration and make sure token is correct.");
     
             if(this.cfg.debugEnabled())
                 ex.printStackTrace();
