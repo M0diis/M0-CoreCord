@@ -32,6 +32,9 @@ embed-page-left: '⬅️'
 embed-page-right: '➡️'
 embed-close: '❌'
 rows-in-page: 5
+# Whether to always show number of results in embed description
+# without need to #count
+always-show-count: true
 
 # Role IDs that are allowed to use the commands
 # You have to have developer mode enabled on discord

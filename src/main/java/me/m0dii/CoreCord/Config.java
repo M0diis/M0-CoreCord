@@ -21,6 +21,8 @@ public class Config
     private boolean deleteOnClose;
     private int rowsInPage;
     
+    private boolean showCount;
+    
     private String dateFormat;
     
     private String botToken, botPrefix;
@@ -58,6 +60,8 @@ public class Config
         this.debugging = cfg.getBoolean("debug");
         this.deleteOnClose = cfg.getBoolean("delete-on-close");
         this.rowsInPage = cfg.getInt("rows-in-page", 5);
+        
+        this.showCount = cfg.getBoolean("always-show-count", true);
         
         this.embedLeft = getStr("embed-page-left");
         this.embedRight = getStr("embed-page-right");
@@ -162,5 +166,10 @@ public class Config
     public boolean useMySQL()
     {
         return this.useMySQL;
+    }
+    
+    public boolean showCount()
+    {
+        return this.showCount;
     }
 }

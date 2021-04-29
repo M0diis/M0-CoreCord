@@ -199,23 +199,26 @@ public class DiscordListener extends ListenerAdapter
                         String[] split = r.split(" \\| ");
         
                         String date = split[0];
-                        String values = split[1];
+                        String data = split[1];
                         
                         if(filters.size() != 0)
                         {
-                            String tempFilter = values.split("\n")[1]
+                            String tempFilter = data.split("\n")[1]
                                     .replace("/", "");
                             
                             if(!filters.contains(tempFilter))
                                 continue;
                         }
         
-                        embed.addField(date, values, false);
+                        embed.addField(date, data, false);
         
                         counter++;
         
                         if(counter >= this.cfg.getRowsInPage())
                         {
+                            if(cfg.showCount())
+                                embed.setDescription("Found " + results.size() + " results.");
+    
                             embed.setFooter("Page " + (pages.size() + 1) + " • " +
                                     e.getAuthor().getAsTag());
                             
