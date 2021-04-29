@@ -154,17 +154,20 @@ public class CoSQL
         pst.setString(1, name);
         pst.setString(2, name);
     
-        ResultSet result = pst.executeQuery(query);
-        
         int userID = 0;
     
-        while (result.next())
+    
+        try(ResultSet result = pst.executeQuery())
         {
-            userID = result.getInt("ID");
+            while (result.next())
+            {
+                userID = result.getInt("ID");
+            }
+    
+            pst.close();
         }
         
-        pst.close();
-        
+
         return userID;
     }
     
@@ -185,14 +188,15 @@ public class CoSQL
     
         query += " GROUP BY ID;";
         
-        Statement st = connection.createStatement();
+        PreparedStatement pst = connection.prepareStatement(query);
         
-        ResultSet result = st.executeQuery(query);
-        
-        if (result.next())
-            userIDS.add(result.getInt("ID"));
-        
-        st.close();
+        try(ResultSet result = pst.executeQuery())
+        {
+            if (result.next())
+                userIDS.add(result.getInt("ID"));
+        }
+    
+        pst.close();
         
         return userIDS;
     }
@@ -292,43 +296,44 @@ public class CoSQL
             pst.setLong(1, time);
             pst.setInt(2, userID);
             
-            ResultSet result = pst.executeQuery(query);
-            
-            while (result.next())
+            try(ResultSet result = pst.executeQuery())
             {
-                StringBuilder values = new StringBuilder();
-                
-                String date = Utils.getDateFromTimestamp(result.getString("time"));
-                
-                values.append(date)
-                        .append(" | ");
+                while (result.next())
+                {
+                    StringBuilder values = new StringBuilder();
         
-                values.append("X:")
-                        .append(result.getString("x"))
-                        .append(" ");
+                    String date = Utils.getDateFromTimestamp(result.getString("time"));
         
-                values.append("Y:")
-                        .append(result.getString("y"))
-                        .append(" ");
+                    values.append(date)
+                            .append(" | ");
         
-                values.append("Z:")
-                        .append(result.getString("z"))
-                        .append(" ");
-                
-                values.append("\n")
-                        .append(result.getString("player"))
-                        .append(" ");
-    
-                String ac = result.getString("action");
-                
-                if(ac.equals("0"))
-                    values.append("destroyed ");
-                if(ac.equals("1"))
-                    values.append("placed ");
-                
-                values.append(result.getString("material"));
+                    values.append("X:")
+                            .append(result.getString("x"))
+                            .append(" ");
         
-                results.add(values.toString());
+                    values.append("Y:")
+                            .append(result.getString("y"))
+                            .append(" ");
+        
+                    values.append("Z:")
+                            .append(result.getString("z"))
+                            .append(" ");
+        
+                    values.append("\n")
+                            .append(result.getString("player"))
+                            .append(" ");
+        
+                    String ac = result.getString("action");
+        
+                    if(ac.equals("0"))
+                        values.append("destroyed ");
+                    if(ac.equals("1"))
+                        values.append("placed ");
+        
+                    values.append(result.getString("material"));
+        
+                    results.add(values.toString());
+                }
             }
         }
         
@@ -347,33 +352,34 @@ public class CoSQL
             pst.setLong(1, time);
             pst.setInt(2, userID);
             
-            ResultSet result = pst.executeQuery();
-            
-            while (result.next())
+            try(ResultSet result = pst.executeQuery())
             {
-                StringBuilder values = new StringBuilder();
-    
-                String date = Utils.getDateFromTimestamp(result.getString("time"));
-                
-                values.append(date)
-                    .append(" | ");
-                
-                values.append("X:")
-                    .append(result.getString("x"))
-                    .append(" ");
-                
-                values.append("Y:")
-                    .append(result.getString("y"))
-                    .append(" ");
-                
-                values.append("Z:")
-                    .append(result.getString("z"))
-                        .append(" ");
-                
-                values.append("\n")
-                    .append(result.getString("message"));
-                
-                results.add(values.toString());
+                while (result.next())
+                {
+                    StringBuilder values = new StringBuilder();
+        
+                    String date = Utils.getDateFromTimestamp(result.getString("time"));
+        
+                    values.append(date)
+                            .append(" | ");
+        
+                    values.append("X:")
+                            .append(result.getString("x"))
+                            .append(" ");
+        
+                    values.append("Y:")
+                            .append(result.getString("y"))
+                            .append(" ");
+        
+                    values.append("Z:")
+                            .append(result.getString("z"))
+                            .append(" ");
+        
+                    values.append("\n")
+                            .append(result.getString("message"));
+        
+                    results.add(values.toString());
+                }
             }
         }
         
@@ -397,50 +403,51 @@ public class CoSQL
         if(cfg.debugEnabled())
             plugin.getLogger().info("Executing query: \n" + query);
         
-        ResultSet result = pst.executeQuery();
-        
-        while (result.next())
+        try(ResultSet result = pst.executeQuery())
         {
-            StringBuilder values = new StringBuilder();
+            while (result.next())
+            {
+                StringBuilder values = new StringBuilder();
         
-            String date = Utils.getDateFromTimestamp(result.getString("time"));
+                String date = Utils.getDateFromTimestamp(result.getString("time"));
         
-            values.append(date)
-                    .append(" | ");
+                values.append(date)
+                        .append(" | ");
         
-            values.append("X:")
-                    .append(result.getString("x"))
-                    .append(" ");
-
-            values.append("Y:")
-                    .append(result.getString("y"))
-                    .append(" ");
+                values.append("X:")
+                        .append(result.getString("x"))
+                        .append(" ");
         
-            values.append("Z:")
-                    .append(result.getString("z"))
-                    .append(" ");
+                values.append("Y:")
+                        .append(result.getString("y"))
+                        .append(" ");
         
-            values.append("\n")
-                    .append(result.getString("player"))
-                    .append(" ");
+                values.append("Z:")
+                        .append(result.getString("z"))
+                        .append(" ");
         
-            String ac = result.getString("action");
-            
-            if(ac.equals("0"))
-                values.append("removed ");
-            if(ac.equals("1"))
-                values.append("added ");
-            if(ac.equals("2"))
-                values.append("dropped ");
-            if(ac.equals("3"))
-                values.append("picked up ");
+                values.append("\n")
+                        .append(result.getString("player"))
+                        .append(" ");
         
-            values.append(result.getString("amount"))
-                    .append(" ");
+                String ac = result.getString("action");
         
-            values.append(result.getString("material"));
+                if(ac.equals("0"))
+                    values.append("removed ");
+                if(ac.equals("1"))
+                    values.append("added ");
+                if(ac.equals("2"))
+                    values.append("dropped ");
+                if(ac.equals("3"))
+                    values.append("picked up ");
         
-            results.add(values.toString());
+                values.append(result.getString("amount"))
+                        .append(" ");
+        
+                values.append(result.getString("material"));
+        
+                results.add(values.toString());
+            }
         }
     }
 }
