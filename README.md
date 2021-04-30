@@ -60,3 +60,59 @@ From there you can go to OAUTH section and invite your bot to your discord serve
 You can find more information how to create a BOT on discord.py docs:
 https://discordpy.readthedocs.io/en/stable/discord.html
 
+## Configuration
+
+```yaml
+## MySQL Configuration
+# Make sure the values are the exact same
+# as in your CoreProtect config.
+# By default table prefix is co_
+
+# You can also use SQLite, but I strongly recommend
+# using MySQL instead.
+
+use-mysql: true
+mysql-host: "host-name"
+mysql-port: 3306
+mysql-database: "database-name"
+mysql-username: "database-user"
+# Leave '' if password not required
+mysql-password: "user-password"
+
+## Discord BOT Token
+# https://discord.com/developers/applications
+discord-bot-token: "your-token"
+command-prefix: "co!"
+
+## Embed configuration
+# Embed page buttons use unicode symbols
+# Leave them as it is if you don't know what you're doing
+# Do not use high values for rows in one page
+
+# Date format uses Java SimpleDataFormat
+# https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+date-format: "yyyy-MM-dd HH:mm:ss"
+# Whether to delete the embed when close button pressed
+# If false, it will only hide the buttons.
+delete-on-close: false
+embed-page-left: '⬅️'
+embed-page-right: '➡️'
+embed-close: '❌'
+rows-in-page: 5
+# Whether to always show number of results in embed description
+# without need to #count
+always-show-count: true
+
+# Role IDs that are allowed to use the commands
+# You have to have developer mode enabled on discord
+# To get the ID right click on the role and copy
+allowed-roles:
+  - 'role-one-id'
+  - 'role-two-id'
+
+## Debugging
+# Only enable if you need to find out what's wrong
+# Sends a lot of extra messages to the console
+debug: false
+```
+
