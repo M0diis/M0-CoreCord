@@ -6,7 +6,7 @@ Discord integration for CoreProtect plugin.
 The integration works both SQLite and MySQL databases.
 
 Spigot page:
-https://www.spigotmc.org/resources/m0-corecord.91805/
+https://www.spigotmc.org/resources/m0-corecord.91863/
 
 ## Development
 Building is quite simple.
