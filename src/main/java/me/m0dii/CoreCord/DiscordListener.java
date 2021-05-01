@@ -70,6 +70,24 @@ public class DiscordListener extends ListenerAdapter
             return;
         }
         
+        if(alias(cmd, "help, commands") && allowed)
+        {
+            String pr = cfg.getBotPrefix();
+            
+            embed.setDescription("\nBOT Prefix: **" + pr + "**")
+                    .addField("Lookup", pr + "lookup u:user a:action t:time", false)
+                    .addField("Filter", pr + "lookup u:user a:action t:time f:filter", false)
+                    .addField("Reverse", pr + "lookup u:user a:action t:time -r", false)
+                    .addField("Count", pr + "lookup u:user a:action t:time #count", false)
+                    .addField("Reload", pr + "reload", false)
+                    .addField("Actions", "block, command, chat, drop, session, container", false)
+                    .addField("Time", "ex.: 1m; 1d12h; 1h1m1s; 5h,30s; 23h,30m,60s; etc.", false);
+            
+            sendEmbed(channel, embed);
+            
+            return;
+        }
+        
         if(alias(cmd, "version, ver") && allowed)
         {
             CoreProtect co = CoreProtect.getInstance();
@@ -211,6 +229,15 @@ public class DiscordListener extends ListenerAdapter
                         break;
                     }
                 
+                if(cfg.debugEnabled())
+                {
+                    plugin.getLogger().info("User: " + user);
+                    plugin.getLogger().info("Time: " + time);
+                    plugin.getLogger().info("Action: " + action);
+                    plugin.getLogger().info("Filter: " + filter);
+                    plugin.getLogger().info("Reverse: " + reverse);
+                }
+                
                 try
                 {
                     List<String> results = coSQL.lookUpData(user, action, timeToSeconds(time));
@@ -227,7 +254,8 @@ public class DiscordListener extends ListenerAdapter
                         return;
                     }
                     
-                    if(args[args.length - 1].equalsIgnoreCase("#count"))
+                    if(filters.size() == 0 &&
+                            args[args.length - 1].equalsIgnoreCase("#count"))
                     {
                         embed.setDescription("Found " + results.size() + " results.");
                         
@@ -297,6 +325,19 @@ public class DiscordListener extends ListenerAdapter
                         if(reverse)
                             i--;
                         else i++;
+                    }
+    
+                    if(filters.size() != 0 &&
+                            args[args.length - 1].equalsIgnoreCase("#count"))
+                    {
+                        embed.setDescription(String.format("Found %d %s.", filterMacthes, filterMacthes == 1 ? "result" :
+                                "results"));
+                        
+                        embed.clearFields();
+        
+                        sendEmbed(channel, embed);
+        
+                        return;
                     }
                     
                     if(filters.size() != 0 && filterMacthes == 0)
