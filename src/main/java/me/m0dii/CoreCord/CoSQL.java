@@ -226,45 +226,6 @@ public class CoSQL
         
         if(table == null)
             return results;
-        
-        if(table.equals(Table.CHAT))
-        {
-            String query =
-            "SELECT " +
-            "co_chat.time AS time, " +
-            "co_chat.x, " +
-            "co_chat.y, " +
-            "co_chat.z, " +
-            "co_chat.message as message, " +
-            "cu.user as player, " +
-            "cu.uuid as playeruuid " +
-            "FROM co_chat " +
-            "LEFT JOIN co_user cu on co_chat.user = cu.rowid " +
-            "WHERE co_chat.time > CURRENT_TIMESTAMP - ? " +
-            "AND co_chat.user = ? ";
-    
-            if(!useMySQL)
-                query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
-    
-            PreparedStatement pst = connection.prepareStatement(query);
-    
-            pst.setLong(1, time);
-            pst.setInt(2, userID);
-    
-            try(ResultSet result = pst.executeQuery())
-            {
-                while (result.next())
-                {
-                    StringBuilder values = new StringBuilder();
-            
-                    getDateAndXYZ(values, result);
-            
-                    values.append(result.getString("message"));
-            
-                    results.add(values.toString());
-                }
-            }
-        }
     
         if(table.equals(Table.DROP))
         {
@@ -346,7 +307,8 @@ public class CoSQL
                 query += " AND co_session.action = " + actionType;
     
             if(!useMySQL)
-                query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
+                query = query.replace("UNIX_TIMESTAMP()",
+                        "strftime('%s', 'now')");
     
             PreparedStatement pst = connection.prepareStatement(query);
     
@@ -399,7 +361,8 @@ public class CoSQL
                 query += " AND co_block.action = " + actionType;
     
             if(!useMySQL)
-                query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
+                query = query.replace("UNIX_TIMESTAMP()",
+                        "strftime('%s', 'now')");
             
             PreparedStatement pst = connection.prepareStatement(query);
             
@@ -438,33 +401,57 @@ public class CoSQL
             "WHERE co_command.time > UNIX_TIMESTAMP() - ? " +
             "AND co_command.user = ? ";
     
-            if(!useMySQL)
-                query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
-            
-            PreparedStatement pst = connection.prepareStatement(query);
-            
-            pst.setLong(1, time);
-            pst.setInt(2, userID);
-            
-            try(ResultSet result = pst.executeQuery())
-            {
-                while (result.next())
-                {
-                    StringBuilder values = new StringBuilder();
+            getMessageOrCommand(time, results, userID, query);
+        }
     
-                    getDateAndXYZ(values, result);
-    
-                    values.append(result.getString("message"));
+        if(table.equals(Table.CHAT))
+        {
+            String query =
+            "SELECT " +
+            "co_chat.time AS time, " +
+            "co_chat.x, " +
+            "co_chat.y, " +
+            "co_chat.z, " +
+            "co_chat.message as message, " +
+            "cu.user as player, " +
+            "cu.uuid as playeruuid " +
+            "FROM co_chat " +
+            "LEFT JOIN co_user cu on co_chat.user = cu.rowid " +
+            "WHERE co_chat.time > CURRENT_TIMESTAMP - ? " +
+            "AND co_chat.user = ? ";
         
-                    results.add(values.toString());
-                }
-            }
+            getMessageOrCommand(time, results, userID, query);
         }
         
         if(!useMySQL)
             connection.close();
     
         return results;
+    }
+    
+    private void getMessageOrCommand(long time, List<String> results, int userID, String query) throws SQLException
+    {
+        if(!useMySQL)
+            query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
+        
+        PreparedStatement pst = connection.prepareStatement(query);
+        
+        pst.setLong(1, time);
+        pst.setInt(2, userID);
+        
+        try(ResultSet result = pst.executeQuery())
+        {
+            while (result.next())
+            {
+                StringBuilder values = new StringBuilder();
+
+                getDateAndXYZ(values, result);
+
+                values.append(result.getString("message"));
+    
+                results.add(values.toString());
+            }
+        }
     }
     
     private void getDateAndXYZ(StringBuilder sb, ResultSet result) throws SQLException
@@ -490,7 +477,8 @@ public class CoSQL
                             long time, int userID) throws SQLException
     {
         if(!useMySQL)
-            query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
+            query = query.replace("UNIX_TIMESTAMP()",
+                    "strftime('%s', 'now')");
         
         PreparedStatement pst = connection.prepareStatement(query);
         
