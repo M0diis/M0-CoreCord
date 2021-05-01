@@ -6,5 +6,6 @@ public enum Table {
     COMMAND,
     CONTAINER,
     ENTITY,
+    SESSION,
     DROP
 }

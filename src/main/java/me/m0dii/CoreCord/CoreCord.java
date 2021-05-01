@@ -66,20 +66,8 @@ public class CoreCord extends JavaPlugin
         
         this.coSQL = new CoSQL(this);
     
-        Metrics metrics = new Metrics(this, 11173);
+        setupMetrics();
     
-        CustomChart c = new MultiLineChart("players_and_servers", () ->
-        {
-            Map<String, Integer> valueMap = new HashMap<>();
-        
-            valueMap.put("servers", 1);
-            valueMap.put("players", Bukkit.getOnlinePlayers().size());
-        
-            return valueMap;
-        });
-    
-        metrics.addCustomChart(c);
-        
         initializeDiscordBOT();
     
         info("");
@@ -91,6 +79,23 @@ public class CoreCord extends JavaPlugin
         info(" |_|  |_|\\___/");
         info("");
         info("M0-CoreCord has been enabled!");
+    }
+    
+    private void setupMetrics()
+    {
+        Metrics metrics = new Metrics(this, 11173);
+        
+        CustomChart c = new MultiLineChart("players_and_servers", () ->
+        {
+            Map<String, Integer> valueMap = new HashMap<>();
+        
+            valueMap.put("servers", 1);
+            valueMap.put("players", Bukkit.getOnlinePlayers().size());
+        
+            return valueMap;
+        });
+        
+        metrics.addCustomChart(c);
     }
     
     public void onDisable()

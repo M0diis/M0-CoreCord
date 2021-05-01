@@ -125,6 +125,9 @@ public class CoSQL
             case "chat":
                 return Table.CHAT;
                 
+            case "session":
+                return Table.SESSION;
+                
             default:
                 break;
         }
@@ -161,7 +164,6 @@ public class CoSQL
             pst.close();
         }
         
-
         return userID;
     }
     
@@ -208,6 +210,9 @@ public class CoSQL
             actionType = 0;
         if(action.charAt(0) == '+')
             actionType = 1;
+        
+        if(cfg.debugEnabled())
+            plugin.getLogger().info(String.valueOf(actionType));
     
         int userID = getIDbyName(name);
         
@@ -215,6 +220,9 @@ public class CoSQL
             plugin.getLogger().info("Found user ID by name from database: " + userID);
     
         Table table = getTableByAction(action);
+        
+        if(cfg.debugEnabled())
+            plugin.getLogger().info(String.valueOf(time));
         
         if(table == null)
             return results;
@@ -232,7 +240,7 @@ public class CoSQL
             "cu.uuid as playeruuid " +
             "FROM co_chat " +
             "LEFT JOIN co_user cu on co_chat.user = cu.rowid " +
-            "WHERE co_chat.time > CURRENT_TIMESTAMP -  ? " +
+            "WHERE co_chat.time > CURRENT_TIMESTAMP - ? " +
             "AND co_chat.user = ? ";
     
             if(!useMySQL)
@@ -282,7 +290,7 @@ public class CoSQL
                 actionType = 3;
     
             if(actionType != -1)
-                query += " AND co_block.action = " + actionType;
+                query += " AND co_item.action = " + actionType;
     
             getResults(results, query, time, userID);
         }
@@ -313,9 +321,59 @@ public class CoSQL
                 actionType = 1;
             
             if(actionType != -1)
-                query += " AND co_block.action = " + actionType;
+                query += " AND co_container.action = " + actionType;
             
             getResults(results, query, time, userID);
+        }
+        
+        if(table.equals(Table.SESSION))
+        {
+            String query =
+            "SELECT " +
+            "co_session.time AS time, " +
+            "co_session.x, " +
+            "co_session.y, " +
+            "co_session.z, " +
+            "co_session.action AS action, " +
+            "cu.user AS player, " +
+            "cu.uuid AS playeruuid " +
+            "FROM co_session " +
+            "LEFT JOIN co_user cu on co_session.user = cu.rowid " +
+            "WHERE co_session.time > UNIX_TIMESTAMP() - ? " +
+            "AND co_session.user = ? ";
+            
+            if(actionType != -1)
+                query += " AND co_session.action = " + actionType;
+    
+            if(!useMySQL)
+                query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
+    
+            PreparedStatement pst = connection.prepareStatement(query);
+    
+            pst.setLong(1, time);
+            pst.setInt(2, userID);
+    
+            try(ResultSet result = pst.executeQuery())
+            {
+                while (result.next())
+                {
+                    StringBuilder values = new StringBuilder();
+            
+                    getDateAndXYZ(values, result);
+            
+                    values.append(result.getString("player"))
+                            .append(" ");
+            
+                    String ac = result.getString("action");
+            
+                    if(ac.equals("0"))
+                        values.append("logged out");
+                    if(ac.equals("1"))
+                        values.append("logged in");
+            
+                    results.add(values.toString());
+                }
+            }
         }
     
         if(table.equals(Table.BLOCK))
