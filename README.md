@@ -11,11 +11,8 @@ https://www.spigotmc.org/resources/m0-corecord.91863/
 ## Development
 Building is quite simple.
 
-Clone the repository or download the source code from releases.
-
+Clone the repository or download the source code from releases.  
 Make sure you have gradle installed and run `gradlew shadowjar` to build the jar.
-
-APIs used:
 
 JDA Pagination Utils
 - https://github.com/ygimenez/Pagination-Utils
@@ -43,22 +40,13 @@ https://github.com/M0diis/M0-OnlinePlayersGUI/actions
 
 To use this integration you have to have CoreProtect installed and have a Discord server.
 
-You can find CoreProtect plugin here:
+You can find CoreProtect plugin here:  
 https://www.spigotmc.org/resources/coreprotect.8631/
 
-To create a discord bot head to Discord Developer Portal.
-You will have log in with your account and create a new application.
+You also need to create and invite a Bot User to your Discord server.
 
-Developer portal is located here:
-https://discord.com/developers/applications
-
-Go the application settings menu and add a BOT user.
-The token can be found in the BOT section. Make sure to not share it with anyone you don't trust. 
-
-From there you can go to OAUTH section and invite your bot to your discord server.
-
-You can find more information how to create a BOT on discord.py docs:
-https://discordpy.readthedocs.io/en/stable/discord.html
+You can find all the required information on how to do so the Wiki:  
+https://github.com/M0diis/M0-CoreCord/wiki/Discord-BOT
 
 ## Configuration
 
