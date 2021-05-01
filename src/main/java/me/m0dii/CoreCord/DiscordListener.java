@@ -3,10 +3,12 @@ package me.m0dii.CoreCord;
 import com.github.ygimenez.method.Pages;
 import com.github.ygimenez.model.Page;
 import com.github.ygimenez.type.PageType;
+import net.coreprotect.CoreProtect;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.awt.*;
 import java.sql.SQLException;
@@ -63,6 +65,20 @@ public class DiscordListener extends ListenerAdapter
             
             coSQL.connect();
         
+            sendEmbed(channel, embed);
+            
+            return;
+        }
+        
+        if(alias(cmd, "version, ver") && allowed)
+        {
+            CoreProtect co = CoreProtect.getInstance();
+            
+            embed.addField("CoreProtect", co.getDescription().getVersion(), false)
+                    .addField("CoreCord", plugin.getDescription().getVersion(), false)
+                    .addField("Server", plugin.getServer().getVersion(), false)
+                    .addField("Bukkit", plugin.getServer().getBukkitVersion(), false);
+            
             sendEmbed(channel, embed);
             
             return;
