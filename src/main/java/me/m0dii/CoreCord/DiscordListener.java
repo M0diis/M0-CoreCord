@@ -200,7 +200,7 @@ public class DiscordListener extends ListenerAdapter
                     List<String> results = coSQL.lookUpData(user, action, timeToSeconds(time));
                     ArrayList<Page> pages = new ArrayList<>();
                     
-                    int counter = 0;
+                    int rows = 0;
     
                     if(results.size() == 0)
                     {
@@ -222,11 +222,10 @@ public class DiscordListener extends ListenerAdapter
                     
                     for(int i = reverse ? results.size() - 1 : 0; reverse ?  i >= 0 : i < results.size();)
                     {
-                        String r = results.get(i);
-                        String[] split = r.split(" \\| ");
+                        String[] values = results.get(i).split(" \\| ");
         
-                        String date = split[0];
-                        String data = split[1];
+                        String date = values[0];
+                        String data = values[1];
                         
                         if(filters.size() != 0)
                         {
@@ -239,9 +238,9 @@ public class DiscordListener extends ListenerAdapter
         
                         embed.addField(date, data, false);
         
-                        counter++;
+                        rows++;
         
-                        if(counter >= this.cfg.getRowsInPage())
+                        if(rows >= this.cfg.getRowsInPage())
                         {
                             if(cfg.showCount())
                                 embed.setDescription("Found " + results.size() + " results.");
@@ -256,7 +255,7 @@ public class DiscordListener extends ListenerAdapter
                             embed.setAuthor("CoreCord")
                                     .setColor(Color.CYAN);
             
-                            counter = 0;
+                            rows = 0;
                         }
     
                         if(reverse)

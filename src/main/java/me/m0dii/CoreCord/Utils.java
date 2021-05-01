@@ -6,6 +6,8 @@ import java.util.Date;
 
 public class Utils
 {
+    private static final CoreCord plugin = CoreCord.getPlugin(CoreCord.class);
+    
     private static SimpleDateFormat sdf;
     
     public static void setDateFormat(String format)
@@ -20,8 +22,18 @@ public class Utils
         Date date = Date.from(instant);
         
         if(sdf == null)
-            sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            sdf = new SimpleDateFormat(plugin.getCfg().getDateFormat());
         
         return sdf.format(date);
+    }
+    
+    public static void info(String msg)
+    {
+        plugin.getLogger().info(msg);
+    }
+    
+    public static void warn(String msg)
+    {
+        plugin.getLogger().warning(msg);
     }
 }

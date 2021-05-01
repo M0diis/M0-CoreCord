@@ -106,33 +106,30 @@ public class CoSQL
         }
     }
     
-    private String getTableByAction(String action)
+    private Table getTableByAction(String action)
     {
-        String table = "";
-        
         switch(action.toLowerCase().replaceAll("[-+]", ""))
         {
             case "block":
-                table = "co_block";
-                break;
+                return Table.BLOCK;
     
             case "command":
-                table = "co_command";
-                break;
+                return Table.COMMAND;
     
             case "container":
-                table = "co_container";
-                break;
+                return Table.CONTAINER;
                 
             case "drop":
-                table = "co_drop";
-                break;
+                return Table.DROP;
+    
+            case "chat":
+                return Table.CHAT;
                 
             default:
                 break;
         }
         
-        return table;
+        return null;
     }
     
     private int getIDbyName(String name) throws SQLException
@@ -155,15 +152,12 @@ public class CoSQL
         pst.setString(2, name);
     
         int userID = 0;
-    
-    
+        
         try(ResultSet result = pst.executeQuery())
         {
             while (result.next())
-            {
                 userID = result.getInt("ID");
-            }
-    
+            
             pst.close();
         }
         
@@ -220,9 +214,51 @@ public class CoSQL
         if(cfg.debugEnabled())
             plugin.getLogger().info("Found user ID by name from database: " + userID);
     
-        String table = getTableByAction(action);
+        Table table = getTableByAction(action);
         
-        if(table.contains("drop"))
+        if(table == null)
+            return results;
+        
+        if(table.equals(Table.CHAT))
+        {
+            String query =
+            "SELECT " +
+            "co_chat.time AS time, " +
+            "co_chat.x, " +
+            "co_chat.y, " +
+            "co_chat.z, " +
+            "co_chat.message as message, " +
+            "cu.user as player, " +
+            "cu.uuid as playeruuid " +
+            "FROM co_chat " +
+            "LEFT JOIN co_user cu on co_chat.user = cu.rowid " +
+            "WHERE co_chat.time > CURRENT_TIMESTAMP -  ? " +
+            "AND co_chat.user = ? ";
+    
+            if(!useMySQL)
+                query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
+    
+            PreparedStatement pst = connection.prepareStatement(query);
+    
+            pst.setLong(1, time);
+            pst.setInt(2, userID);
+    
+            try(ResultSet result = pst.executeQuery())
+            {
+                while (result.next())
+                {
+                    StringBuilder values = new StringBuilder();
+            
+                    getDateAndXYZ(values, result);
+            
+                    values.append(result.getString("message"));
+            
+                    results.add(values.toString());
+                }
+            }
+        }
+    
+        if(table.equals(Table.DROP))
         {
             String query =
             "SELECT " +
@@ -230,7 +266,7 @@ public class CoSQL
             "co_item.x, " +
             "co_item.y, " +
             "co_item.z, " +
-            "cmm.material, " +
+            "cmm.material as material, " +
             "co_item.amount, " +
             "cu.user as player, " +
             "co_item.action as action " +
@@ -240,10 +276,18 @@ public class CoSQL
             "WHERE co_item.time > UNIX_TIMESTAMP() - ? " +
             "AND co_item.user = ? ";
     
+            if(action.charAt(0) == '-')
+                actionType = 2;
+            if(action.charAt(0) == '+')
+                actionType = 3;
+    
+            if(actionType != -1)
+                query += " AND co_block.action = " + actionType;
+    
             getResults(results, query, time, userID);
         }
-        
-        if(table.contains("container"))
+    
+        if(table.equals(Table.CONTAINER))
         {
             String query =
             "SELECT " +
@@ -251,7 +295,7 @@ public class CoSQL
             "co_container.x, " +
             "co_container.y, " +
             "co_container.z, " +
-            "cmm.material, " +
+            "cmm.material as material, " +
             "co_container.rolled_back, " +
             "co_container.action as action, " +
             "co_container.amount, " +
@@ -262,11 +306,19 @@ public class CoSQL
             "LEFT JOIN co_user cu on co_container.user = cu.rowid " +
             "WHERE co_container.time > UNIX_TIMESTAMP() - ? " +
             "AND co_container.user = ? ";
+    
+            if(action.charAt(0) == '-')
+                actionType = 0;
+            if(action.charAt(0) == '+')
+                actionType = 1;
+            
+            if(actionType != -1)
+                query += " AND co_block.action = " + actionType;
             
             getResults(results, query, time, userID);
         }
-        
-        if(table.contains("block"))
+    
+        if(table.equals(Table.CONTAINER))
         {
             String query =
             "SELECT " +
@@ -301,24 +353,9 @@ public class CoSQL
                 while (result.next())
                 {
                     StringBuilder values = new StringBuilder();
-        
-                    String date = Utils.getDateFromTimestamp(result.getString("time"));
-        
-                    values.append(date)
-                            .append(" | ");
-        
-                    values.append("X:")
-                            .append(result.getString("x"))
-                            .append(" ");
-        
-                    values.append("Y:")
-                            .append(result.getString("y"))
-                            .append(" ");
-        
-                    values.append("Z:")
-                            .append(result.getString("z"))
-                            .append("\n");
-        
+                    
+                    getDateAndXYZ(values, result);
+                    
                     values.append(result.getString("player"))
                             .append(" ");
         
@@ -335,13 +372,13 @@ public class CoSQL
                 }
             }
         }
-        
-        if(table.contains("command"))
+    
+        if(table.equals(Table.COMMAND))
         {
             String query =
             "SELECT * FROM co_command " +
             "WHERE co_command.time > UNIX_TIMESTAMP() - ? " +
-            "AND co_command.user = ?;";
+            "AND co_command.user = ? ";
     
             if(!useMySQL)
                 query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
@@ -356,24 +393,9 @@ public class CoSQL
                 while (result.next())
                 {
                     StringBuilder values = new StringBuilder();
-        
-                    String date = Utils.getDateFromTimestamp(result.getString("time"));
-        
-                    values.append(date)
-                            .append(" | ");
-        
-                    values.append("X:")
-                            .append(result.getString("x"))
-                            .append(" ");
-        
-                    values.append("Y:")
-                            .append(result.getString("y"))
-                            .append(" ");
-        
-                    values.append("Z:")
-                            .append(result.getString("z"))
-                            .append("\n");
-        
+    
+                    getDateAndXYZ(values, result);
+    
                     values.append(result.getString("message"));
         
                     results.add(values.toString());
@@ -385,6 +407,25 @@ public class CoSQL
             connection.close();
     
         return results;
+    }
+    
+    private void getDateAndXYZ(StringBuilder sb, ResultSet result) throws SQLException
+    {
+        String date = Utils.getDateFromTimestamp(result.getString("time"));
+    
+        sb.append(date).append(" | ");
+    
+        sb.append("X:")
+                .append(result.getString("x"))
+                .append(" ");
+    
+        sb.append("Y:")
+                .append(result.getString("y"))
+                .append(" ");
+    
+        sb.append("Z:")
+                .append(result.getString("z"))
+                .append("\n");
     }
     
     private void getResults(List<String> results, String query,
@@ -404,22 +445,7 @@ public class CoSQL
             {
                 StringBuilder values = new StringBuilder();
         
-                String date = Utils.getDateFromTimestamp(result.getString("time"));
-        
-                values.append(date)
-                        .append(" | ");
-        
-                values.append("X:")
-                        .append(result.getString("x"))
-                        .append(" ");
-        
-                values.append("Y:")
-                        .append(result.getString("y"))
-                        .append(" ");
-        
-                values.append("Z:")
-                        .append(result.getString("z"))
-                        .append("\n ");
+                getDateAndXYZ(values, result);
         
                 values.append(result.getString("player"))
                         .append(" ");
