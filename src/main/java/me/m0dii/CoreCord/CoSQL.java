@@ -318,7 +318,7 @@ public class CoSQL
             getResults(results, query, time, userID);
         }
     
-        if(table.equals(Table.CONTAINER))
+        if(table.equals(Table.BLOCK))
         {
             String query =
             "SELECT " +

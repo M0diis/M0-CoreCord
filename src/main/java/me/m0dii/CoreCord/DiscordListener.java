@@ -178,7 +178,7 @@ public class DiscordListener extends ListenerAdapter
                     
                 filter = filter.trim().replace("f:", "")
                         .replace("filter:", "");
-                
+                    
                 List<String> filters = new ArrayList<>();
                 
                 if(filter.trim().length() != 0 && !filter.isEmpty())
@@ -220,6 +220,8 @@ public class DiscordListener extends ListenerAdapter
                         return;
                     }
                     
+                    int filterMacthes = 0;
+                    
                     for(int i = reverse ? results.size() - 1 : 0; reverse ?  i >= 0 : i < results.size();)
                     {
                         String[] values = results.get(i).split(" \\| ");
@@ -229,11 +231,29 @@ public class DiscordListener extends ListenerAdapter
                         
                         if(filters.size() != 0)
                         {
-                            String tempFilter = data.split("\n")[1]
-                                    .replace("/", "");
+                            String tempFilter = data.split("\n")[1].replace("/", "");
+                            String[] split = tempFilter.split(" ");
+    
+                            boolean skip = true;
                             
-                            if(!filters.contains(tempFilter))
+                            for(String sp : split)
+                            {
+                                if(filters.contains(sp.trim()))
+                                {
+                                    filterMacthes++;
+                                    
+                                    skip = false;
+                                }
+                            }
+                            
+                            if(skip)
+                            {
+                                if(reverse)
+                                    i--;
+                                else i++;
+        
                                 continue;
+                            }
                         }
         
                         embed.addField(date, data, false);
@@ -261,6 +281,15 @@ public class DiscordListener extends ListenerAdapter
                         if(reverse)
                             i--;
                         else i++;
+                    }
+                    
+                    if(filters.size() != 0 && filterMacthes == 0)
+                    {
+                        embed.setDescription("No results found by specified filter.");
+    
+                        sendEmbed(channel, embed);
+    
+                        return;
                     }
                     
                     if(pages.size() == 0)
