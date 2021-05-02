@@ -4,6 +4,7 @@ import com.github.ygimenez.exception.InvalidHandlerException;
 import com.github.ygimenez.method.Pages;
 import com.github.ygimenez.model.PaginatorBuilder;
 import com.github.ygimenez.type.Emote;
+import me.m0dii.CoreCord.Listeners.PlayerJoin;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import org.bstats.bukkit.Metrics;
@@ -28,6 +29,12 @@ public class CoreCord extends JavaPlugin
     private FileConfiguration fileCfg = null;
     private File configFile = null;
     private Config cfg;
+    
+    public String getSpigotLink()
+    {
+        return "https://www.spigotmc.org/resources/m0-corecord.91863/";
+    }
+    
     
     public Config getCfg()
     {
@@ -65,6 +72,8 @@ public class CoreCord extends JavaPlugin
         this.msgListener = new DiscordListener(this);
         
         this.coSQL = new CoSQL(this);
+    
+        getServer().getPluginManager().registerEvents(new PlayerJoin(this), this);
     
         setupMetrics();
     

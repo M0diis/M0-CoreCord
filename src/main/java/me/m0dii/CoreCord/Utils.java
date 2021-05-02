@@ -1,5 +1,7 @@
 package me.m0dii.CoreCord;
 
+import org.bukkit.ChatColor;
+
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
@@ -25,6 +27,11 @@ public class Utils
             sdf = new SimpleDateFormat(plugin.getCfg().getDateFormat());
         
         return sdf.format(date);
+    }
+    
+    public static String format(String text)
+    {
+        return ChatColor.translateAlternateColorCodes('&', text);
     }
     
     public static void info(String msg)

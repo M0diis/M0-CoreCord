@@ -45,7 +45,10 @@ allowed-roles:
   - 'role-one-id'
   - 'role-two-id'
 
-## Debugging
-# Only enable if you need to find out what's wrong
+## Misc
+# Enable debugging only to find what's wrong
 # Sends a lot of extra messages to the console
 debug: false
+
+# Notifies about latest updates
+notify-update: true

@@ -29,6 +29,8 @@ public class Config
     
     private List<String> allowedRoles;
     
+    private boolean notifyUpdate;
+    
     FileConfiguration cfg;
     
     public void reload(CoreCord plugin)
@@ -68,6 +70,8 @@ public class Config
         this.embedClose = getStr("embed-close");
         
         this.dateFormat = getStr("date-format");
+        
+        this.notifyUpdate = cfg.getBoolean("notify-update", true);
         
         Utils.setDateFormat(this.dateFormat);
     }
@@ -171,5 +175,10 @@ public class Config
     public boolean showCount()
     {
         return this.showCount;
+    }
+    
+    public boolean notifyUpdate()
+    {
+        return this.notifyUpdate;
     }
 }

@@ -5,3 +5,7 @@ version: 1.3
 api-version: 1.16
 author: M0dii
 depend: [CoreProtect]
+permissions:
+  corecord.update.notify:
+    description: Notifies users with this permission that there is update.
+    default: op
