@@ -4,6 +4,7 @@ import com.github.ygimenez.exception.InvalidHandlerException;
 import com.github.ygimenez.method.Pages;
 import com.github.ygimenez.model.PaginatorBuilder;
 import com.github.ygimenez.type.Emote;
+import me.m0dii.CoreCord.Commands.CoreCo;
 import me.m0dii.CoreCord.Listeners.PlayerJoin;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -11,8 +12,10 @@ import org.bstats.bukkit.Metrics;
 import org.bstats.charts.CustomChart;
 import org.bstats.charts.MultiLineChart;
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.security.auth.login.LoginException;
@@ -30,11 +33,12 @@ public class CoreCord extends JavaPlugin
     private File configFile = null;
     private Config cfg;
     
+    private PluginManager pm;
+    
     public String getSpigotLink()
     {
         return "https://www.spigotmc.org/resources/m0-corecord.91863/";
     }
-    
     
     public Config getCfg()
     {
@@ -66,6 +70,8 @@ public class CoreCord extends JavaPlugin
     {
         prepareConfig();
         
+        this.pm = getServer().getPluginManager();
+        
         this.cfg = new Config();
         this.cfg.load(this);
     
@@ -73,8 +79,13 @@ public class CoreCord extends JavaPlugin
         
         this.coSQL = new CoSQL(this);
     
-        getServer().getPluginManager().registerEvents(new PlayerJoin(this), this);
+        pm.registerEvents(new PlayerJoin(this), this);
     
+        PluginCommand cmd = this.getCommand("corecord");
+    
+        if(cmd != null)
+            cmd.setExecutor(new CoreCo(this));
+        
         setupMetrics();
     
         initializeDiscordBOT();

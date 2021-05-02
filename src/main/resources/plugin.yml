@@ -9,3 +9,10 @@ permissions:
   corecord.update.notify:
     description: Notifies users with this permission that there is update.
     default: op
+  corecord.main:
+    description: Main command.
+    default: op
+commands:
+  corecord:
+    description: Main command
+    permission: corecord.main

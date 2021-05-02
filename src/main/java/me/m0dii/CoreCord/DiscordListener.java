@@ -5,10 +5,12 @@ import com.github.ygimenez.model.Page;
 import com.github.ygimenez.type.PageType;
 import net.coreprotect.CoreProtect;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.awt.*;
 import java.sql.SQLException;
@@ -34,7 +36,22 @@ public class DiscordListener extends ListenerAdapter
     {
         String[] args = e.getMessage().getContentRaw().split(" ");
         
-        if(!args[0].startsWith(cfg.getBotPrefix())) return;
+        if(cfg.debugEnabled())
+        {
+            plugin.getLogger().info("Message: " + e.getMessage().getContentRaw());
+            
+            plugin.getLogger().info("Prefix: " + cfg.getBotPrefix());
+        }
+        
+        if(!args[0].startsWith(cfg.getBotPrefix()))
+        {
+            if(cfg.debugEnabled())
+            {
+                plugin.getLogger().info("Message not starting with prefix. Ignoring.");
+            }
+            
+            return;
+        }
     
         String cmd = args[0].replace(cfg.getBotPrefix(), "");
         
@@ -45,6 +62,15 @@ public class DiscordListener extends ListenerAdapter
         embed.setAuthor("CoreCord")
                 .setFooter(e.getAuthor().getAsTag(), null)
                 .setColor(Color.CYAN);
+        
+        if(alias(cmd, "ping"))
+        {
+            embed.setDescription("Pong");
+            
+            sendEmbed(channel, embed);
+            
+            return;
+        }
         
         List<String> allowedRoleIDS = cfg.getAllowedRoles();
         

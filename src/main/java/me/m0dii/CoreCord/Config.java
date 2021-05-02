@@ -2,6 +2,7 @@ package me.m0dii.CoreCord;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.Iterator;
 import java.util.List;
 
 public class Config
@@ -74,6 +75,18 @@ public class Config
         this.notifyUpdate = cfg.getBoolean("notify-update", true);
         
         Utils.setDateFormat(this.dateFormat);
+    
+        if(debugEnabled())
+        {
+            plugin.getLogger().info("Config has been loaded successfully.");
+    
+            plugin.getLogger().info("Allowed role IDs to use:");
+            
+            for(String r : allowedRoles)
+            {
+                plugin.getLogger().info(r);
+            }
+        }
     }
     
     private String getStr(String path)

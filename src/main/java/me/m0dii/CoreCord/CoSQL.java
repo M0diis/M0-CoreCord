@@ -1,8 +1,10 @@
 package me.m0dii.CoreCord;
 
+import net.coreprotect.CoreProtect;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
+import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +44,8 @@ public class CoSQL
     
     public void connect()
     {
+        String sep = File.separator;
+        
         if(useMySQL)
         {
             try
@@ -85,9 +89,15 @@ public class CoSQL
     
                 if(cp != null)
                 {
-                    String dataFolder = cp.getDataFolder().toPath() + "\\" + "database.db";
+                    String dataFolder = CoreProtect.getInstance().getDataFolder().toPath() + sep + "database.db";
+                    
+                    if(cfg.debugEnabled())
+                        plugin.getLogger().info("JDBC db Location: " + dataFolder);
                     
                     connection = DriverManager.getConnection("jdbc:sqlite:" + dataFolder);
+                    
+                    if(cfg.debugEnabled())
+                        plugin.getLogger().info("Connection null: " + (connection == null));
                 }
                 else
                 {
