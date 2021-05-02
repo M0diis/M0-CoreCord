@@ -11,8 +11,11 @@ https://www.spigotmc.org/resources/m0-corecord.91863/
 ## Development
 Building is quite simple.
 
+To build CoreCord, you need JDK 8 or higher installed on your system.
+
 Clone the repository or download the source code from releases.  
-Make sure you have gradle installed and run `gradlew shadowjar` to build the jar.
+Make sure you have gradle installed and run `gradlew shadowjar` to build the jar.  
+The jar can be found in `/build/libs/` folder. 
 
 JDA Pagination Utils
 - https://github.com/ygimenez/Pagination-Utils
@@ -103,4 +106,3 @@ allowed-roles:
 # Sends a lot of extra messages to the console
 debug: false
 ```
-
