@@ -13,7 +13,7 @@ public class PlayerJoin implements Listener
 {
     private final CoreCord plugin;
     private final Config cfg;
-    private final String latestVersion = "1.3";
+    private final String latestVersion = "1.4";
     
     public PlayerJoin(CoreCord plugin)
     {

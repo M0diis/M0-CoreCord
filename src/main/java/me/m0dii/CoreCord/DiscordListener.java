@@ -49,13 +49,21 @@ public class DiscordListener extends ListenerAdapter
         List<String> allowedRoleIDS = cfg.getAllowedRoles();
         
         if(m == null)
+        {
+            if(cfg.debugEnabled())
+                plugin.getLogger().info("Member is null.");
+            
             return;
+        }
         
         boolean allowed = false;
         
         for(Role r : m.getRoles())
             if(allowedRoleIDS.contains(r.getId()))
                 allowed = true;
+    
+        if(cfg.debugEnabled())
+            plugin.getLogger().info("User allowed to use commands: " + allowed);
     
         if(alias(cmd, "reload") && allowed)
         {
@@ -95,6 +103,7 @@ public class DiscordListener extends ListenerAdapter
             embed.addField("CoreProtect", co.getDescription().getVersion(), false)
                     .addField("CoreCord", plugin.getDescription().getVersion(), false)
                     .addField("Server", plugin.getServer().getVersion(), false)
+                    .addField("OS", System.getProperty("os.name"), false)
                     .addField("Bukkit", plugin.getServer().getBukkitVersion(), false);
             
             sendEmbed(channel, embed);
