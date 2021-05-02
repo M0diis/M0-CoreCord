@@ -3,6 +3,7 @@ package me.m0dii.CoreCord.Listeners;
 import me.m0dii.CoreCord.Config;
 import me.m0dii.CoreCord.CoreCord;
 import me.m0dii.CoreCord.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,21 +24,24 @@ public class PlayerJoin implements Listener
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e)
     {
-        Player p = e.getPlayer();
-        
-        if(cfg.notifyUpdate())
+        Bukkit.getScheduler().runTaskLaterAsynchronously(this.plugin, () ->
         {
-            if(p.hasPermission("corecord.update.notify"))
+            Player p = e.getPlayer();
+            
+            if(cfg.notifyUpdate())
             {
-                String currentVersion = plugin.getDescription().getVersion();
-                
-                if(!currentVersion.equalsIgnoreCase(latestVersion))
+                if(p.hasPermission("corecord.update.notify"))
                 {
-                    p.sendMessage(Utils.format("&eYou are running an outdated version of M0-CoreCord." +
-                            "\n&eYou can download the latest version on Spigot:" +
-                            "\n&e" + plugin.getSpigotLink()));
+                    String currentVersion = plugin.getDescription().getVersion();
+            
+                    if(!currentVersion.equalsIgnoreCase(latestVersion))
+                    {
+                        p.sendMessage(Utils.format("&eYou are running an outdated version of M0-CoreCord." +
+                                "\n&eYou can download the latest version on Spigot:" +
+                                "\n&e" + plugin.getSpigotLink()));
+                    }
                 }
             }
-        }
+        }, 50L);
     }
 }
