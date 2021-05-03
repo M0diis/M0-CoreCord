@@ -99,6 +99,22 @@ public class CoreCord extends JavaPlugin
         info(" |_|  |_|\\___/");
         info("");
         info("M0-CoreCord has been enabled!");
+        
+        checkForUpdates();
+    }
+    
+    private void checkForUpdates()
+    {
+        new UpdateChecker(this, 91863).getVersion(ver ->
+        {
+            if (!this.getDescription().getVersion().equalsIgnoreCase(
+                    ver.replace("v", "")))
+            {
+                info("You are running an outdated version of M0-CoreCord.");
+                info("You can download the latest version on Spigot:");
+                info(getSpigotLink());
+            }
+        });
     }
     
     private void setupMetrics()

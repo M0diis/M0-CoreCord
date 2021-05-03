@@ -29,13 +29,11 @@ public class UpdateChecker
             Scanner scanner = new Scanner(inputStream))
             {
                 if (scanner.hasNext())
-                {
                     consumer.accept(scanner.next());
-                }
             }
             catch (IOException ex)
             {
-                this.plugin.getLogger().info("Failed to check for updates: ");
+                this.plugin.getLogger().info("Failed to check for updates. ");
                 
                 if(plugin.getCfg().debugEnabled())
                     plugin.getLogger().info(ex.getMessage());
