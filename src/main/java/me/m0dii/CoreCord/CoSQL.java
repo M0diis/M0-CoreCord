@@ -46,6 +46,8 @@ public class CoSQL
     {
         String sep = File.separator;
         
+        boolean debug = cfg.debugEnabled();
+        
         if(useMySQL)
         {
             try
@@ -54,7 +56,7 @@ public class CoSQL
             }
             catch(ClassNotFoundException ex)
             {
-                if(this.cfg.debugEnabled())
+                if(debug)
                     ex.printStackTrace();
                 else
                     plugin.getLogger().info("Cannot find MySQL driver..");
@@ -68,7 +70,7 @@ public class CoSQL
             }
             catch(ClassNotFoundException ex)
             {
-                if(this.cfg.debugEnabled())
+                if(debug)
                     ex.printStackTrace();
                 else
                     plugin.getLogger().info("Cannot find SQLite driver..");
@@ -91,12 +93,12 @@ public class CoSQL
                 {
                     String dataFolder = CoreProtect.getInstance().getDataFolder().toPath() + sep + "database.db";
                     
-                    if(cfg.debugEnabled())
+                    if(debug)
                         plugin.getLogger().info("JDBC db Location: " + dataFolder);
                     
                     connection = DriverManager.getConnection("jdbc:sqlite:" + dataFolder);
                     
-                    if(cfg.debugEnabled())
+                    if(debug)
                         plugin.getLogger().info("Connection null: " + (connection == null));
                 }
                 else
@@ -111,7 +113,7 @@ public class CoSQL
             plugin.getLogger().warning("Failed to connect to the database.");
             plugin.getLogger().warning("Please check the config.");
     
-            if(this.cfg.debugEnabled())
+            if(debug)
                 ex.printStackTrace();
         }
     }
@@ -212,6 +214,8 @@ public class CoSQL
         if(connection == null || connection.isClosed())
             connect();
         
+        boolean debug = cfg.debugEnabled();
+        
         List<String> results = new ArrayList<>();
         
         int actionType = -1;
@@ -221,17 +225,17 @@ public class CoSQL
         if(action.charAt(0) == '+')
             actionType = 1;
         
-        if(cfg.debugEnabled())
+        if(debug)
             plugin.getLogger().info(String.valueOf(actionType));
     
         int userID = getIDbyName(name);
         
-        if(cfg.debugEnabled())
+        if(debug)
             plugin.getLogger().info("Found user ID by name from database: " + userID);
     
         Table table = getTableByAction(action);
         
-        if(cfg.debugEnabled())
+        if(debug)
             plugin.getLogger().info(String.valueOf(time));
         
         if(table == null)

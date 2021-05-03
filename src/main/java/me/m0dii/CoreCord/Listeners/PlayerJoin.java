@@ -2,6 +2,7 @@ package me.m0dii.CoreCord.Listeners;
 
 import me.m0dii.CoreCord.Config;
 import me.m0dii.CoreCord.CoreCord;
+import me.m0dii.CoreCord.UpdateChecker;
 import me.m0dii.CoreCord.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -13,7 +14,6 @@ public class PlayerJoin implements Listener
 {
     private final CoreCord plugin;
     private final Config cfg;
-    private final String latestVersion = "1.4";
     
     public PlayerJoin(CoreCord plugin)
     {
@@ -32,14 +32,16 @@ public class PlayerJoin implements Listener
             {
                 if(p.hasPermission("corecord.update.notify"))
                 {
-                    String currentVersion = plugin.getDescription().getVersion();
-            
-                    if(!currentVersion.equalsIgnoreCase(latestVersion))
+                    new UpdateChecker(this.plugin, 91863).getVersion(ver ->
                     {
-                        p.sendMessage(Utils.format("&eYou are running an outdated version of M0-CoreCord." +
-                                "\n&eYou can download the latest version on Spigot:" +
-                                "\n&e" + plugin.getSpigotLink()));
-                    }
+                        if (!this.plugin.getDescription().getVersion().equalsIgnoreCase(
+                                ver.replace("v", "")))
+                        {
+                            p.sendMessage(Utils.format("&eYou are running an outdated version of M0-CoreCord." +
+                                    "\n&eYou can download the latest version on Spigot:" +
+                                    "\n&e" + plugin.getSpigotLink()));
+                        }
+                    });
                 }
             }
         }, 50L);

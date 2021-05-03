@@ -35,8 +35,10 @@ public class DiscordListener extends ListenerAdapter
     public void onMessageReceived(MessageReceivedEvent e)
     {
         String[] args = e.getMessage().getContentRaw().split(" ");
+    
+        boolean debug = cfg.debugEnabled();
         
-        if(cfg.debugEnabled())
+        if(debug)
         {
             plugin.getLogger().info("Message: " + e.getMessage().getContentRaw());
             
@@ -45,10 +47,8 @@ public class DiscordListener extends ListenerAdapter
         
         if(!args[0].startsWith(cfg.getBotPrefix()))
         {
-            if(cfg.debugEnabled())
-            {
+            if(debug)
                 plugin.getLogger().info("Message not starting with prefix. Ignoring.");
-            }
             
             return;
         }
@@ -81,7 +81,7 @@ public class DiscordListener extends ListenerAdapter
         
         if(m == null)
         {
-            if(cfg.debugEnabled())
+            if(debug)
                 plugin.getLogger().info("Member is null.");
             
             return;
@@ -93,7 +93,7 @@ public class DiscordListener extends ListenerAdapter
             if(allowedRoleIDS.contains(r.getId()))
                 allowed = true;
     
-        if(cfg.debugEnabled())
+        if(debug)
             plugin.getLogger().info("User allowed to use commands: " + allowed);
     
         if(alias(cmd, "reload") && allowed)
@@ -166,7 +166,7 @@ public class DiscordListener extends ListenerAdapter
             }
             catch(SQLException ex)
             {
-                if(cfg.debugEnabled())
+                if(debug)
                     ex.printStackTrace();
     
                 embed.setDescription("Cannot find a connection to the database, reconnecting..");
@@ -183,7 +183,7 @@ public class DiscordListener extends ListenerAdapter
         {
             if(alias(cmd, "lookup, lu, l"))
             {
-                if(cfg.debugEnabled())
+                if(debug)
                     plugin.getLogger().info("Executing [ " + cmd + " ] command by " +
                             "[ " + m.getUser().getAsTag() + " ] ");
     
@@ -269,7 +269,7 @@ public class DiscordListener extends ListenerAdapter
                         break;
                     }
                 
-                if(cfg.debugEnabled())
+                if(debug)
                 {
                     plugin.getLogger().info("User: " + user);
                     plugin.getLogger().info("Time: " + time);
@@ -397,14 +397,12 @@ public class DiscordListener extends ListenerAdapter
                 }
                 catch(SQLException ex)
                 {
-                    if(this.cfg.debugEnabled())
+                    if(debug)
                         ex.printStackTrace();
-                    else
-                    {
-                        plugin.getLogger().warning("SQL Exception has occurred..");
-                    }
                     
+                    plugin.getLogger().warning("SQL Exception has occurred..");
                     plugin.getLogger().warning("Attempting to reconnect..");
+                    
                     coSQL.connect();
                 }
             }
