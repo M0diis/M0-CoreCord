@@ -57,6 +57,11 @@ public class DiscordListener extends ListenerAdapter
         
         Member m = e.getMember();
         MessageChannel channel = e.getChannel();
+        
+        if(cfg.channelWhitelist())
+            if(!cfg.getAllowedChannels().contains(channel.getId()))
+                return;
+            
         EmbedBuilder embed = new EmbedBuilder();
     
         embed.setAuthor("CoreCord")

@@ -12,6 +12,7 @@ public class Config
     
     }
     
+    private String cfgVersion;
     private boolean debugging;
     
     private boolean useMySQL;
@@ -28,7 +29,9 @@ public class Config
     
     private String botToken, botPrefix;
     
-    private List<String> allowedRoles;
+    private boolean channelWhitelist;
+    
+    private List<String> allowedRoles, allowedChannels;
     
     private boolean notifyUpdate;
     
@@ -72,7 +75,11 @@ public class Config
         
         this.dateFormat = getStr("date-format");
         
+        this.cfgVersion = getStr("cfg-version");
         this.notifyUpdate = cfg.getBoolean("notify-update", true);
+        
+        this.channelWhitelist = cfg.getBoolean("channel-whitelist", false);
+        this.allowedChannels = cfg.getStringList("channels-ids");
         
         Utils.setDateFormat(this.dateFormat);
     
@@ -193,5 +200,23 @@ public class Config
     public boolean notifyUpdate()
     {
         return this.notifyUpdate;
+    }
+    
+    public String getCfgVersion()
+    {
+        if(cfgVersion == null || cfgVersion.trim().isEmpty())
+            return "1.0";
+        
+        return cfgVersion;
+    }
+    
+    public List<String> getAllowedChannels()
+    {
+        return this.allowedChannels;
+    }
+    
+    public boolean channelWhitelist()
+    {
+        return this.channelWhitelist;
     }
 }

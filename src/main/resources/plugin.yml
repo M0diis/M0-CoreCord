@@ -12,6 +12,9 @@ permissions:
   corecord.main:
     description: Main command.
     default: op
+  corecord.reload:
+    description: Reload command /corecord reload
+    default: op
 commands:
   corecord:
     description: Main command

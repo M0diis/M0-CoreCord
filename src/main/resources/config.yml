@@ -45,6 +45,11 @@ allowed-roles:
   - 'role-one-id'
   - 'role-two-id'
 
+# Only work in specified channels
+channel-whitelist: false
+channels-ids:
+  - 'channel-id'
+
 ## Misc
 # Enable debugging only to find what's wrong
 # Sends a lot of extra messages to the console
@@ -52,3 +57,6 @@ debug: false
 
 # Notifies about latest updates
 notify-update: true
+
+# Do not edit
+cfg-version: "1.4"
