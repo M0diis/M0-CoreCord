@@ -37,7 +37,7 @@ Paper API
 All the development builds can be found on actions page.
 Open the workflow and get the artifact from there.
 
-https://github.com/M0diis/M0-OnlinePlayersGUI/actions
+https://github.com/M0diis/M0-CoreCord/actions
 
 ## Usage & Discord
 
