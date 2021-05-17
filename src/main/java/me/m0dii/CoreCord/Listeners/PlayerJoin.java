@@ -34,10 +34,13 @@ public class PlayerJoin implements Listener
                 {
                     new UpdateChecker(this.plugin, 91863).getVersion(ver ->
                     {
-                        if (!this.plugin.getDescription().getVersion().equalsIgnoreCase(
+                        String curr = this.plugin.getDescription().getVersion();
+                        
+                        if (!curr.equalsIgnoreCase(
                                 ver.replace("v", "")))
                         {
                             p.sendMessage(Utils.format("&eYou are running an outdated version of M0-CoreCord." +
+                                    "\n&eCurrent: " + curr + ", latest: " + ver +
                                     "\n&eYou can download the latest version on Spigot:" +
                                     "\n&e" + plugin.getSpigotLink()));
                         }
