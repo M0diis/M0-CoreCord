@@ -8,6 +8,7 @@ import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class CoSQL
 {
@@ -179,37 +180,53 @@ public class CoSQL
         return userID;
     }
     
-    private List<Integer> getIDSbyNames(String[] names) throws SQLException
+    private List<String> getIDSbyNames(String[] names) throws SQLException
     {
         if(connection.isClosed())
             connect();
         
-        List<Integer> userIDS = new ArrayList<>();
+        List<String> userIDS = new ArrayList<>();
         
         String query =
-        "SELECT co_command.user AS ID, cu.user as NAME " +
+        "SELECT co_command.user AS ID, cu.user AS NAME " +
         "FROM co_command " +
-        "LEFT JOIN co_user cu on co_command.user = cu.rowid ";
+        "LEFT JOIN co_user cu ON co_command.user = cu.rowid " +
+        "WHERE LOWER(cu.user) IN (";
+        
+        StringBuilder sb = new StringBuilder();
         
         for(String name : names)
-            query += "AND cu.user = '" + name + "' ";
-    
-        query += " GROUP BY ID;";
+        {
+            sb.append("'").append(name).append("',");
+        }
+        
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(") GROUP BY ID; ");
+        
+        query += sb.toString();
         
         PreparedStatement pst = connection.prepareStatement(query);
         
         try(ResultSet result = pst.executeQuery())
         {
-            if (result.next())
-                userIDS.add(result.getInt("ID"));
+            while (result.next())
+                userIDS.add(result.getString("ID"));
         }
     
         pst.close();
         
+        if(cfg.debugEnabled())
+        {
+            plugin.getLogger().info("Joined names: " + String.join(", ", names));
+            
+            for(String s : userIDS)
+                plugin.getLogger().info(s);
+        }
+        
         return userIDS;
     }
     
-    public List<String> lookUpData(String name, String action, long time) throws SQLException
+    public List<String> lookUpData(String[] names, String action, String[] blocks, long time) throws SQLException
     {
         if(connection == null || connection.isClosed())
             connect();
@@ -228,11 +245,19 @@ public class CoSQL
         if(debug)
             plugin.getLogger().info(String.valueOf(actionType));
     
-        int userID = getIDbyName(name);
+        List<String> userIDs = getIDSbyNames(names);
         
-        if(debug)
-            plugin.getLogger().info("Found user ID by name from database: " + userID);
-    
+        StringBuilder inb = new StringBuilder();
+        
+        for(String id : userIDs)
+        {
+            inb.append("'").append(id).append("',");
+        }
+        
+        inb.deleteCharAt(inb.length() - 1);
+        
+        String in = inb.toString();
+        
         Table table = getTableByAction(action);
         
         if(debug)
@@ -257,7 +282,7 @@ public class CoSQL
             "LEFT JOIN co_material_map cmm on co_item.type = cmm.id " +
             "LEFT JOIN co_user cu on co_item.user = cu.rowid " +
             "WHERE co_item.time > UNIX_TIMESTAMP() - ? " +
-            "AND co_item.user = ? ";
+            "AND co_item.user IN ( query_names ) ";
     
             if(action.charAt(0) == '-')
                 actionType = 2;
@@ -267,7 +292,9 @@ public class CoSQL
             if(actionType != -1)
                 query += " AND co_item.action = " + actionType;
     
-            getResults(results, query, time, userID);
+            query = query.replace("query_names", in);
+            
+            getResults(results, query, time);
         }
     
         if(table.equals(Table.CONTAINER))
@@ -288,7 +315,7 @@ public class CoSQL
             "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
             "LEFT JOIN co_user cu on co_container.user = cu.rowid " +
             "WHERE co_container.time > UNIX_TIMESTAMP() - ? " +
-            "AND co_container.user = ? ";
+            "AND co_container.user IN ( query_names ) ";
     
             if(action.charAt(0) == '-')
                 actionType = 0;
@@ -298,7 +325,9 @@ public class CoSQL
             if(actionType != -1)
                 query += " AND co_container.action = " + actionType;
             
-            getResults(results, query, time, userID);
+            query = query.replace("query_names", in);
+            
+            getResults(results, query, time);
         }
         
         if(table.equals(Table.SESSION))
@@ -315,7 +344,7 @@ public class CoSQL
             "FROM co_session " +
             "LEFT JOIN co_user cu on co_session.user = cu.rowid " +
             "WHERE co_session.time > UNIX_TIMESTAMP() - ? " +
-            "AND co_session.user = ? ";
+            "AND co_session.user IN ( query_names ) ";
             
             if(actionType != -1)
                 query += " AND co_session.action = " + actionType;
@@ -323,12 +352,13 @@ public class CoSQL
             if(!useMySQL)
                 query = query.replace("UNIX_TIMESTAMP()",
                         "strftime('%s', 'now')");
+            
+            query = query.replace("query_names", in);
     
             PreparedStatement pst = connection.prepareStatement(query);
     
             pst.setLong(1, time);
-            pst.setInt(2, userID);
-    
+
             try(ResultSet result = pst.executeQuery())
             {
                 while (result.next())
@@ -369,7 +399,7 @@ public class CoSQL
             "LEFT JOIN co_material_map cmm on co_block.type = cmm.id " +
             "LEFT JOIN co_user cu on co_block.user = cu.rowid " +
             "WHERE co_block.time > UNIX_TIMESTAMP() - ? " +
-            "AND co_block.user = ? ";
+            "AND co_block.user IN ( query_names ) ";
             
             if(actionType != -1)
                 query += " AND co_block.action = " + actionType;
@@ -377,17 +407,38 @@ public class CoSQL
             if(!useMySQL)
                 query = query.replace("UNIX_TIMESTAMP()",
                         "strftime('%s', 'now')");
+    
+            query = query.replace("query_names", in);
             
             PreparedStatement pst = connection.prepareStatement(query);
             
             pst.setLong(1, time);
-            pst.setInt(2, userID);
             
             try(ResultSet result = pst.executeQuery())
             {
                 while (result.next())
                 {
                     StringBuilder values = new StringBuilder();
+                    
+                    String mat = result.getString("material");
+                    
+                    if(blocks.length != 0)
+                    {
+                        boolean skip = true;
+                        
+                        for(String bl : blocks)
+                        {
+                            if(mat.contains(bl.toLowerCase().trim()))
+                            {
+                                skip = false;
+                                
+                                break;
+                            }
+                        }
+                        
+                        if(skip)
+                            continue;
+                    }
                     
                     getDateAndXYZ(values, result);
                     
@@ -401,7 +452,7 @@ public class CoSQL
                     if(ac.equals("1"))
                         values.append("placed ");
         
-                    values.append(result.getString("material"));
+                    values.append(mat);
         
                     results.add(values.toString());
                 }
@@ -413,9 +464,11 @@ public class CoSQL
             String query =
             "SELECT * FROM co_command " +
             "WHERE co_command.time > UNIX_TIMESTAMP() - ? " +
-            "AND co_command.user = ? ";
+            "AND co_command.user IN ( query_names ) ";
     
-            getMessageOrCommand(time, results, userID, query);
+            query = query.replace("query_names", in);
+    
+            getMessageOrCommand(time, results, query);
         }
     
         if(table.equals(Table.CHAT))
@@ -432,9 +485,11 @@ public class CoSQL
             "FROM co_chat " +
             "LEFT JOIN co_user cu on co_chat.user = cu.rowid " +
             "WHERE co_chat.time > CURRENT_TIMESTAMP - ? " +
-            "AND co_chat.user = ? ";
+            "AND co_chat.user IN ( query_names ) ";
+    
+            query = query.replace("query_names", in);
         
-            getMessageOrCommand(time, results, userID, query);
+            getMessageOrCommand(time, results, query);
         }
         
         if(!useMySQL)
@@ -443,7 +498,7 @@ public class CoSQL
         return results;
     }
     
-    private void getMessageOrCommand(long time, List<String> results, int userID, String query) throws SQLException
+    private void getMessageOrCommand(long time, List<String> results, String query) throws SQLException
     {
         if(!useMySQL)
             query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
@@ -451,8 +506,7 @@ public class CoSQL
         PreparedStatement pst = connection.prepareStatement(query);
         
         pst.setLong(1, time);
-        pst.setInt(2, userID);
-        
+
         try(ResultSet result = pst.executeQuery())
         {
             while (result.next())
@@ -487,8 +541,7 @@ public class CoSQL
                 .append("\n");
     }
     
-    private void getResults(List<String> results, String query,
-                            long time, int userID) throws SQLException
+    private void getResults(List<String> results, String query, long time) throws SQLException
     {
         if(!useMySQL)
             query = query.replace("UNIX_TIMESTAMP()",
@@ -497,7 +550,6 @@ public class CoSQL
         PreparedStatement pst = connection.prepareStatement(query);
         
         pst.setLong(1, time);
-        pst.setInt(2, userID);
         
         try(ResultSet result = pst.executeQuery())
         {

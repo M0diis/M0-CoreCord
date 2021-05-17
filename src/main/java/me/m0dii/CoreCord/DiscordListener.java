@@ -187,18 +187,7 @@ public class DiscordListener extends ListenerAdapter
                     plugin.getLogger().info("Executing [ " + cmd + " ] command by " +
                             "[ " + m.getUser().getAsTag() + " ] ");
     
-                String time = "";
-    
-                for(String arg : args)
-                    if(arg.startsWith("t:") || arg.startsWith("time:"))
-                    {
-                        time = arg;
-                        
-                        break;
-                    }
-    
-                time = time.replace("t:", "")
-                        .replace("time:", "")
+                String time = getInfo(args, "t:", "time:")
                         .replace(",", "");
     
                 if(time.length() == 0 || time.trim().isEmpty())
@@ -210,49 +199,20 @@ public class DiscordListener extends ListenerAdapter
                     return;
                 }
                 
-                String user = "";
-                
-                for(String arg : args)
-                    if(arg.startsWith("u:") || arg.startsWith("user:"))
-                    {
-                        user = arg;
-                        
-                        break;
-                    }
-            
-                user = user.replace("u:", "")
-                    .replace("user:", "");
+                String user = clearSQL(getInfo(args, "u:", "user:"));
                 
                 String[] users = user.split(",");
     
-                String action = "";
-    
-                for(String arg : args)
-                    if(arg.startsWith("a:") || arg.startsWith("action:"))
-                    {
-                        action = arg;
-                        
-                        break;
-                    }
-    
-                action = action.replace("a:", "")
-                    .replace("action:", "");
-    
-                String[] actions = action.split(",");
+                String action = getInfo(args, "a:", "action:");
                 
-                String filter = "";
+                String[] actions = action.split(",");
     
-                for(String arg : args)
-                    if(arg.startsWith("f:") || arg.startsWith("filter:"))
-                    {
-                        filter = arg;
-                        
-                        break;
-                    }
-                    
-                filter = filter.trim().replace("f:", "")
-                        .replace("filter:", "");
-                    
+                String block = getInfo(args, "b:", "block:");
+    
+                String[] blocks = block.split(",");
+    
+                String filter = getInfo(args, "f:", "filter:");
+                
                 List<String> filters = new ArrayList<>();
                 
                 if(filter.trim().length() != 0 && !filter.isEmpty())
@@ -274,13 +234,14 @@ public class DiscordListener extends ListenerAdapter
                     plugin.getLogger().info("User: " + user);
                     plugin.getLogger().info("Time: " + time);
                     plugin.getLogger().info("Action: " + action);
+                    plugin.getLogger().info("Block: " + block);
                     plugin.getLogger().info("Filter: " + filter);
                     plugin.getLogger().info("Reverse: " + reverse);
                 }
                 
                 try
                 {
-                    List<String> results = coSQL.lookUpData(user, action, timeToSeconds(time));
+                    List<String> results = coSQL.lookUpData(users, action, blocks, timeToSeconds(time));
                     ArrayList<Page> pages = new ArrayList<>();
                     
                     int rows = 0;
@@ -304,7 +265,7 @@ public class DiscordListener extends ListenerAdapter
                         return;
                     }
                     
-                    int filterMacthes = 0;
+                    int filterMatches = 0;
                     
                     for(int i = reverse ? results.size() - 1 : 0; reverse ?  i >= 0 : i < results.size();)
                     {
@@ -324,7 +285,7 @@ public class DiscordListener extends ListenerAdapter
                             {
                                 if(filters.contains(sp.trim()))
                                 {
-                                    filterMacthes++;
+                                    filterMatches++;
                                     
                                     skip = false;
                                 }
@@ -343,20 +304,19 @@ public class DiscordListener extends ListenerAdapter
                         embed.addField(date, data, false);
         
                         rows++;
-        
+    
+                        if(cfg.showCount())
+                            embed.setDescription("Found " + results.size() + " results.");
+    
                         if(rows >= this.cfg.getRowsInPage())
                         {
-                            if(cfg.showCount())
-                                embed.setDescription("Found " + results.size() + " results.");
-    
                             embed.setFooter("Page " + (pages.size() + 1) + " • " +
                                     e.getAuthor().getAsTag());
                             
                             pages.add(new Page(PageType.EMBED, embed.build()));
             
-                            embed = new EmbedBuilder();
-            
-                            embed.setAuthor("CoreCord")
+                            embed = new EmbedBuilder()
+                                    .setAuthor("CoreCord")
                                     .setColor(Color.CYAN);
             
                             rows = 0;
@@ -370,7 +330,7 @@ public class DiscordListener extends ListenerAdapter
                     if(filters.size() != 0 &&
                             args[args.length - 1].equalsIgnoreCase("#count"))
                     {
-                        embed.setDescription(String.format("Found %d %s.", filterMacthes, filterMacthes == 1 ? "result" :
+                        embed.setDescription(String.format("Found %d %s.", filterMatches, filterMatches == 1 ? "result" :
                                 "results"));
                         
                         embed.clearFields();
@@ -380,7 +340,7 @@ public class DiscordListener extends ListenerAdapter
                         return;
                     }
                     
-                    if(filters.size() != 0 && filterMacthes == 0)
+                    if(filters.size() != 0 && filterMatches == 0)
                     {
                         embed.setDescription("No results found by specified filter.");
     
@@ -474,6 +434,20 @@ public class DiscordListener extends ListenerAdapter
         return total;
     }
     
+    private String getInfo(String[] args, String lu1, String lu2)
+    {
+        for(String arg : args)
+            if(arg.startsWith(lu1) || arg.startsWith(lu2))
+                return clean(arg, lu1, lu2);
+        
+        return "";
+    }
+    
+    private String clean(String origin, String tr1, String tr2)
+    {
+        return origin.trim().replace(tr1, "").replace(tr2, "");
+    }
+    
     private void sendEmbed(MessageChannel ch, EmbedBuilder embed)
     {
         ch.sendMessage(embed.build()).queue();
@@ -490,5 +464,11 @@ public class DiscordListener extends ListenerAdapter
         }
         
         return false;
+    }
+    
+    private String clearSQL(String data)
+    {
+        return data.toLowerCase().replaceAll(
+                "(select|where|group,by|order,by|left,join|union|co_)", "");
     }
 }

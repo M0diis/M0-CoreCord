@@ -6,13 +6,13 @@ plugins {
 compileJava.options.encoding = 'UTF-8'
 
 group 'me.m0dii'
-version '1.4'
+version '1.5'
 
 shadowJar {
     relocate 'org.bstats', 'me.m0dii.CoreCord'
     minimize()
 
-    archiveFileName = "M0-CoreCord-v${version}.jar"
+    archiveFileName = "M0-CoreCord-${version}.jar"
 }
 
 repositories {
