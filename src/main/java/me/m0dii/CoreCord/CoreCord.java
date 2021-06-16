@@ -107,10 +107,13 @@ public class CoreCord extends JavaPlugin
     {
         new UpdateChecker(this, 91863).getVersion(ver ->
         {
-            if (!this.getDescription().getVersion().equalsIgnoreCase(
+            String curr = this.getDescription().getVersion();
+            
+            if (!curr.equalsIgnoreCase(
                     ver.replace("v", "")))
             {
                 info("You are running an outdated version of M0-CoreCord.");
+                info("Latest version: " + ver + ", you are using: " + curr);
                 info("You can download the latest version on Spigot:");
                 info(getSpigotLink());
             }

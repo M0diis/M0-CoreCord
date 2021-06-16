@@ -1,5 +1,6 @@
-package me.m0dii.CoreCord;
+package me.m0dii.CoreCord.Utils;
 
+import me.m0dii.CoreCord.CoreCord;
 import org.bukkit.ChatColor;
 
 import java.text.SimpleDateFormat;
@@ -32,6 +33,11 @@ public class Utils
     public static String format(String text)
     {
         return ChatColor.translateAlternateColorCodes('&', text);
+    }
+    
+    public static String clearFormat(String text)
+    {
+        return ChatColor.stripColor(text);
     }
     
     public static void info(String msg)

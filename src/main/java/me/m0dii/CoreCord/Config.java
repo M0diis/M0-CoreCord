@@ -1,8 +1,8 @@
 package me.m0dii.CoreCord;
 
+import me.m0dii.CoreCord.Utils.Utils;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.util.Iterator;
 import java.util.List;
 
 public class Config

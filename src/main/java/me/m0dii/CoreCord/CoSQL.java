@@ -1,5 +1,6 @@
 package me.m0dii.CoreCord;
 
+import me.m0dii.CoreCord.Utils.Utils;
 import net.coreprotect.CoreProtect;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -8,7 +9,6 @@ import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class CoSQL
 {
@@ -196,9 +196,7 @@ public class CoSQL
         StringBuilder sb = new StringBuilder();
         
         for(String name : names)
-        {
             sb.append("'").append(name).append("',");
-        }
         
         sb.deleteCharAt(sb.length() - 1);
         sb.append(") GROUP BY ID; ");
@@ -250,9 +248,7 @@ public class CoSQL
         StringBuilder inb = new StringBuilder();
         
         for(String id : userIDs)
-        {
             inb.append("'").append(id).append("',");
-        }
         
         inb.deleteCharAt(inb.length() - 1);
         
@@ -427,14 +423,12 @@ public class CoSQL
                         boolean skip = true;
                         
                         for(String bl : blocks)
-                        {
                             if(mat.contains(bl.toLowerCase().trim()))
                             {
                                 skip = false;
                                 
                                 break;
                             }
-                        }
                         
                         if(skip)
                             continue;
@@ -449,6 +443,7 @@ public class CoSQL
         
                     if(ac.equals("0"))
                         values.append("destroyed ");
+                    
                     if(ac.equals("1"))
                         values.append("placed ");
         

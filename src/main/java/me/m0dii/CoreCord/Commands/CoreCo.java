@@ -1,7 +1,8 @@
 package me.m0dii.CoreCord.Commands;
 
 import me.m0dii.CoreCord.CoreCord;
-import me.m0dii.CoreCord.Utils;
+import me.m0dii.CoreCord.Utils.Messenger;
+import me.m0dii.CoreCord.Utils.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -43,17 +44,28 @@ public class CoreCo implements CommandExecutor
             if(!p.hasPermission("corecord.main"))
                 return true;
     
-            if(args.length == 1 && p.hasPermission("corecord.reload"))
+            if(args.length == 1 && p.hasPermission(""))
             {
-                if(args[0].equalsIgnoreCase("reload"))
+                if(canUse(args[0], "reload", "corecord.command.reload", p))
                 {
                     plugin.getCfg().reload(this.plugin);
                     
-                    p.sendMessage(Utils.format("&aConfiguration has been reloaded."));
+                    Messenger.sendFormat(p, "&aConfiguration has been reloaded.");
+                }
+    
+                if(canUse(args[0], "version", "corecord.command.version", p))
+                {
+                    Messenger.sendFormat(p, "&aYou are using CoreCord version &2" +
+                            plugin.getDescription().getVersion());
                 }
             }
         }
         
         return true;
+    }
+    
+    private static boolean canUse(String arg, String cmd, String perm, Player pl)
+    {
+        return arg.equalsIgnoreCase(cmd) && pl.hasPermission(perm);
     }
 }
