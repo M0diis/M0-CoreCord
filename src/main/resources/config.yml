@@ -59,4 +59,4 @@ debug: false
 notify-update: true
 
 # Do not edit
-cfg-version: "1.4"
+cfg-version: "1.6"
