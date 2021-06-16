@@ -1,10 +1,13 @@
 package me.m0dii.CoreCord.Utils;
 
+import me.m0dii.CoreCord.CoreCord;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 public class Messenger
 {
+    private static final CoreCord plugin = CoreCord.getPlugin(CoreCord.class);
+    
     public static void sendFormat(CommandSender s, String message)
     {
         s.sendMessage(format(message));
@@ -25,4 +28,13 @@ public class Messenger
         return ChatColor.translateAlternateColorCodes('&', text);
     }
     
+    public static void info(String msg)
+    {
+        plugin.getLogger().info(msg);
+    }
+    
+    public static void warn(String msg)
+    {
+        plugin.getLogger().warning(msg);
+    }
 }

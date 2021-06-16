@@ -3,6 +3,8 @@ package me.m0dii.CoreCord;
 import com.github.ygimenez.method.Pages;
 import com.github.ygimenez.model.Page;
 import com.github.ygimenez.type.PageType;
+import me.m0dii.CoreCord.Utils.Messenger;
+import me.m0dii.CoreCord.Utils.Utils;
 import net.coreprotect.CoreProtect;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
@@ -40,15 +42,15 @@ public class DiscordListener extends ListenerAdapter
         
         if(debug)
         {
-            plugin.getLogger().info("Message: " + e.getMessage().getContentRaw());
+            Messenger.info("Message: " + e.getMessage().getContentRaw());
             
-            plugin.getLogger().info("Prefix: " + cfg.getBotPrefix());
+            Messenger.info("Prefix: " + cfg.getBotPrefix());
         }
         
         if(!args[0].startsWith(cfg.getBotPrefix()))
         {
             if(debug)
-                plugin.getLogger().info("Message not starting with prefix. Ignoring.");
+                Messenger.info("Message not starting with prefix. Ignoring.");
             
             return;
         }
@@ -82,7 +84,7 @@ public class DiscordListener extends ListenerAdapter
         if(m == null)
         {
             if(debug)
-                plugin.getLogger().info("Member is null.");
+                Messenger.info("Member is null.");
             
             return;
         }
@@ -94,7 +96,7 @@ public class DiscordListener extends ListenerAdapter
                 allowed = true;
     
         if(debug)
-            plugin.getLogger().info("User allowed to use commands: " + allowed);
+            Messenger.info("User allowed to use commands: " + allowed);
     
         if(alias(cmd, "reload") && allowed)
         {
@@ -184,7 +186,7 @@ public class DiscordListener extends ListenerAdapter
             if(alias(cmd, "lookup, lu, l"))
             {
                 if(debug)
-                    plugin.getLogger().info("Executing [ " + cmd + " ] command by " +
+                    Messenger.info("Executing [ " + cmd + " ] command by " +
                             "[ " + m.getUser().getAsTag() + " ] ");
     
                 String time = getInfo(args, "t:", "time:")
@@ -231,12 +233,12 @@ public class DiscordListener extends ListenerAdapter
                 
                 if(debug)
                 {
-                    plugin.getLogger().info("User: " + user);
-                    plugin.getLogger().info("Time: " + time);
-                    plugin.getLogger().info("Action: " + action);
-                    plugin.getLogger().info("Block: " + block);
-                    plugin.getLogger().info("Filter: " + filter);
-                    plugin.getLogger().info("Reverse: " + reverse);
+                    Messenger.info("User: " + user);
+                    Messenger.info("Time: " + time);
+                    Messenger.info("Action: " + action);
+                    Messenger.info("Block: " + block);
+                    Messenger.info("Filter: " + filter);
+                    Messenger.info("Reverse: " + reverse);
                 }
                 
                 try
@@ -360,8 +362,8 @@ public class DiscordListener extends ListenerAdapter
                     if(debug)
                         ex.printStackTrace();
                     
-                    plugin.getLogger().warning("SQL Exception has occurred..");
-                    plugin.getLogger().warning("Attempting to reconnect..");
+                    Messenger.warn("SQL Exception has occurred..");
+                    Messenger.warn("Attempting to reconnect..");
                     
                     coSQL.connect();
                 }
@@ -379,7 +381,7 @@ public class DiscordListener extends ListenerAdapter
         {
             char c = time.charAt(i);
         
-            if(isDigit(String.valueOf(c)))
+            if(Utils.isDigit(String.valueOf(c)))
             {
                 tempDigit += c;
             }
@@ -392,11 +394,6 @@ public class DiscordListener extends ListenerAdapter
         }
     
         return total < 0 ? 0 : total;
-    }
-    
-    private boolean isDigit(String str)
-    {
-        return str.matches("-?\\d+(\\.\\d+)?");
     }
     
     private int getSecondsFromTime(String digit, String type)

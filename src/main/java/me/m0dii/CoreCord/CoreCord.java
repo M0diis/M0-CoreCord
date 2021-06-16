@@ -6,6 +6,7 @@ import com.github.ygimenez.model.PaginatorBuilder;
 import com.github.ygimenez.type.Emote;
 import me.m0dii.CoreCord.Commands.CoreCo;
 import me.m0dii.CoreCord.Listeners.PlayerJoin;
+import me.m0dii.CoreCord.Utils.Messenger;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import org.bstats.bukkit.Metrics;
@@ -13,7 +14,6 @@ import org.bstats.charts.CustomChart;
 import org.bstats.charts.MultiLineChart;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -29,8 +29,6 @@ import java.util.Map;
 
 public class CoreCord extends JavaPlugin
 {
-    private FileConfiguration fileCfg = null;
-    private File configFile = null;
     private Config cfg;
     
     private PluginManager pm;
@@ -90,15 +88,15 @@ public class CoreCord extends JavaPlugin
     
         initializeDiscordBOT();
     
-        info("");
-        info("  __  __  ___  ");
-        info(" |  \\/  |/ _ \\ ");
-        info(" | \\  / | | | |");
-        info(" | |\\/| | | | |");
-        info(" | |  | | |_| |");
-        info(" |_|  |_|\\___/");
-        info("");
-        info("M0-CoreCord has been enabled!");
+        Messenger.info("");
+        Messenger.info("  __  __  ___  ");
+        Messenger.info(" |  \\/  |/ _ \\ ");
+        Messenger.info(" | \\  / | | | |");
+        Messenger.info(" | |\\/| | | | |");
+        Messenger.info(" | |  | | |_| |");
+        Messenger.info(" |_|  |_|\\___/");
+        Messenger.info("");
+        Messenger.info("M0-CoreCord has been enabled!");
         
         checkForUpdates();
     }
@@ -112,10 +110,10 @@ public class CoreCord extends JavaPlugin
             if (!curr.equalsIgnoreCase(
                     ver.replace("v", "")))
             {
-                info("You are running an outdated version of M0-CoreCord.");
-                info("Latest version: " + ver + ", you are using: " + curr);
-                info("You can download the latest version on Spigot:");
-                info(getSpigotLink());
+                Messenger.info("You are running an outdated version of M0-CoreCord.");
+                Messenger.info("Latest version: " + ver + ", you are using: " + curr);
+                Messenger.info("You can download the latest version on Spigot:");
+                Messenger.info(getSpigotLink());
             }
         });
     }
@@ -150,7 +148,7 @@ public class CoreCord extends JavaPlugin
                 {
                     CoSQL.connection.close();
     
-                    info("SQL connection has been closed successfully.");
+                    Messenger.info("SQL connection has been closed successfully.");
                 }
 
             }
@@ -160,22 +158,22 @@ public class CoreCord extends JavaPlugin
             }
         }
     
-        info("M0-CoreCord has been disabled!");
+        Messenger.info("M0-CoreCord has been disabled!");
     }
     
     private void prepareConfig()
     {
-        this.configFile = new File(this.getDataFolder(), "config.yml");
+        File configFile = new File(this.getDataFolder(), "config.yml");
         
-        if(!this.configFile.exists())
+        if(!configFile.exists())
         {
             //noinspection ResultOfMethodCallIgnored
-            this.configFile.getParentFile().mkdirs();
+            configFile.getParentFile().mkdirs();
     
-            this.copy(this.getResource("config.yml"), this.configFile);
+            this.copy(this.getResource("config.yml"), configFile);
         }
     
-        this.fileCfg = YamlConfiguration.loadConfiguration(this.configFile);
+        YamlConfiguration.loadConfiguration(configFile);
     }
     
     private void initializeDiscordBOT()
@@ -198,13 +196,13 @@ public class CoreCord extends JavaPlugin
                     .setDeleteOnCancel(this.cfg.deleteOnClose());
             
             Pages.activate(paginator.build());
-            
-            info("Logged in successfully as " + discord.getSelfUser().getAsTag());
+    
+            Messenger.info("Logged in successfully as " + discord.getSelfUser().getAsTag());
         }
         catch(LoginException | InterruptedException | InvalidHandlerException ex)
         {
-            warning("Discord BOT has failed to connect..");
-            warning("Please check the configuration and make sure token is correct.");
+            Messenger.warn("Discord BOT has failed to connect..");
+            Messenger.warn("Please check the configuration and make sure token is correct.");
     
             if(this.cfg.debugEnabled())
                 ex.printStackTrace();
@@ -231,20 +229,10 @@ public class CoreCord extends JavaPlugin
             }
             catch(Exception e)
             {
-                this.warning("Error copying resource: " + e.getMessage());
+                Messenger.warn("Error copying resource: " + e.getMessage());
                 
                 e.printStackTrace();
             }
         }
-    }
-    
-    private void info(String message)
-    {
-        this.getLogger().info(message);
-    }
-    
-    private void warning(String message)
-    {
-        this.getLogger().warning(message);
     }
 }

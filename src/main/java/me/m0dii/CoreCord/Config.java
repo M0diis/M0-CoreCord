@@ -16,7 +16,7 @@ public class Config
     private boolean debugging;
     
     private boolean useMySQL;
-    private String host, database, username, password, tablePrefix;
+    private String host, database, username, password; // tablePrefix;
     private int port;
     
     private String embedLeft, embedRight, embedClose;

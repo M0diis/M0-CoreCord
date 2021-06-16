@@ -40,13 +40,8 @@ public class Utils
         return ChatColor.stripColor(text);
     }
     
-    public static void info(String msg)
+    public static boolean isDigit(String str)
     {
-        plugin.getLogger().info(msg);
-    }
-    
-    public static void warn(String msg)
-    {
-        plugin.getLogger().warning(msg);
+        return str.matches("-?\\d+(\\.\\d+)?");
     }
 }

@@ -1,5 +1,6 @@
 package me.m0dii.CoreCord;
 
+import me.m0dii.CoreCord.Utils.Messenger;
 import org.bukkit.Bukkit;
 import org.bukkit.util.Consumer;
 
@@ -33,10 +34,10 @@ public class UpdateChecker
             }
             catch (IOException ex)
             {
-                this.plugin.getLogger().info("Failed to check for updates. ");
+                Messenger.info("Failed to check for updates. ");
                 
                 if(plugin.getCfg().debugEnabled())
-                    plugin.getLogger().info(ex.getMessage());
+                    Messenger.info(ex.getMessage());
             }
         });
     }
