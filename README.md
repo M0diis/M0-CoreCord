@@ -30,7 +30,16 @@ To build CoreCord, you need JDK 8 or higher installed on your system.
 
 Clone the repository or download the source code from releases.  
 Make sure you have gradle installed and run `gradlew shadowjar` to build the jar.  
-The jar can be found in `/build/libs/` folder. 
+The jar will be found created in `/build/libs/` folder. 
+
+##### Alternative
+```
+git clone https://github.com/M0diis/M0-CoreCord.git
+cd M0-CoreCord
+gradlew shadowjar
+```
+
+#### APIs used
 
 JDA Pagination Utils
 - https://github.com/ygimenez/Pagination-Utils
