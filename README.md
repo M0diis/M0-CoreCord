@@ -16,45 +16,23 @@
 ![Banner][banner]
 
 ## M0-CoreCord
-Discord integration for CoreProtect plugin.
-
-The integration works both SQLite and MySQL databases.
-
-Spigot page:
-https://www.spigotmc.org/resources/m0-corecord.91863/
+Discord integration for CoreProtect plugin, supports both SQLite and MySQL databases.
 
 ### Development
 Building is quite simple.
 
-To build CoreCord, you need JDK 8 or higher installed on your system.
+To build CoreCord, you need JDK 8 or higher and Gradle installed on your system.
 
 Clone the repository or download the source code from releases.  
-Make sure you have gradle installed and run `gradlew shadowjar` to build the jar.  
+Run `gradlew shadowjar` to build the jar.  
 The jar will be found created in `/build/libs/` folder. 
 
-##### Alternative
+##### Example
 ```
 git clone https://github.com/M0diis/M0-CoreCord.git
 cd M0-CoreCord
 gradlew shadowjar
 ```
-
-#### APIs used
-
-JDA Pagination Utils
-- https://github.com/ygimenez/Pagination-Utils
-
-SQLite driver
-- https://github.com/xerial/sqlite-jdbc
-
-MySQL driver
-- https://dev.mysql.com/downloads/connector/j/
-
-Java Discord API
-- https://github.com/DV8FromTheWorld/JDA
-
-Paper API
-- https://github.com/PaperMC/Paper
 
 ### Dev-builds
 
@@ -130,3 +108,19 @@ allowed-roles:
 # Sends a lot of extra messages to the console
 debug: false
 ```
+
+#### Links
+
+- [Spigot Page](https://www.spigotmc.org/resources/m0-corecord.91863/)
+- [Issues](https://github.com/M0diis/M0-CoreCord/issues)
+  - [Bug report](https://github.com/M0diis/M0-CoreCord/issues/new?assignees=&labels=bug&template=bug_report.md&title=)
+  - [Feature request](https://github.com/M0diis/M0-CoreCord/issues/new?assignees=&labels=enhancement&template=feature.md)
+- [Pull requests](https://github.com/M0diis/M0-CoreCord/pulls)
+
+##### APIs
+- [JDA Pagination Utils](https://github.com/ygimenez/Pagination-Utils)
+- [SQLite driver](https://github.com/xerial/sqlite-jdbc)
+- [MySQL driver](https://dev.mysql.com/downloads/connector/j/)
+- [Java Discord API](https://github.com/DV8FromTheWorld/JDA)
+- [Paper API](https://github.com/PaperMC/Paper)
+
