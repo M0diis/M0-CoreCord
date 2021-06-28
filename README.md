@@ -7,13 +7,14 @@
 [buildImage]: https://github.com/M0diis/M0-CoreCord/actions/workflows/gradle.yml/badge.svg
 [releaseImage]: https://img.shields.io/github/v/release/M0diis/M0-CoreCord.svg?label=github%20release
 [downloadsImage]: https://img.shields.io/badge/dynamic/json.svg?color=brightgreen&label=downloads%20%28spigotmc.org%29&query=%24.downloads&url=https%3A%2F%2Fapi.spiget.org%2Fv2%2Fresources%2F91863
+[updatedImage]: https://badges.pufler.dev/updated/M0diis/M0-CoreCord
 
 <!-- End of variables block -->
 
-![build][buildImage] ![release][releaseImage]  
-![downloads][downloadsImage] ![rating][ratingImage]
-
 ![Banner][banner]
+
+![build][buildImage] ![release][releaseImage] ![updated][updatedImage]  
+![downloads][downloadsImage] ![rating][ratingImage]
 
 ## M0-CoreCord
 Discord integration for CoreProtect plugin, supports both SQLite and MySQL databases.
