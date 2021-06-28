@@ -1,6 +1,21 @@
-[![Java CI with Gradle](https://github.com/M0diis/M0-CoreCord/actions/workflows/gradle.yml/badge.svg)](https://github.com/M0diis/M0-CoreCord/actions/workflows/gradle.yml)
+<!-- Variables -->
 
-# M0-CoreCord
+[resourceId]: 91863
+
+[banner]: https://i.imgur.com/8cj7B0e.png
+[ratingImage]: https://img.shields.io/badge/dynamic/json.svg?color=brightgreen&label=rating&query=%24.rating.average&suffix=%20%2F%205&url=https%3A%2F%2Fapi.spiget.org%2Fv2%2Fresources%2F91863
+[buildImage]: https://github.com/M0diis/M0-CoreCord/actions/workflows/gradle.yml/badge.svg
+[releaseImage]: https://img.shields.io/github/v/release/M0diis/M0-CoreCord.svg?label=github%20release
+[downloadsImage]: https://img.shields.io/badge/dynamic/json.svg?color=brightgreen&label=downloads%20%28spigotmc.org%29&query=%24.downloads&url=https%3A%2F%2Fapi.spiget.org%2Fv2%2Fresources%2F91863
+
+<!-- End of variables block -->
+
+![build][buildImage] ![release][releaseImage]  
+![downloads][downloadsImage] ![rating][ratingImage]
+
+![Banner][banner]
+
+## M0-CoreCord
 Discord integration for CoreProtect plugin.
 
 The integration works both SQLite and MySQL databases.
@@ -8,7 +23,7 @@ The integration works both SQLite and MySQL databases.
 Spigot page:
 https://www.spigotmc.org/resources/m0-corecord.91863/
 
-## Development
+### Development
 Building is quite simple.
 
 To build CoreCord, you need JDK 8 or higher installed on your system.
@@ -32,14 +47,14 @@ Java Discord API
 Paper API
 - https://github.com/PaperMC/Paper
 
-## Dev-builds
+### Dev-builds
 
 All the development builds can be found on actions page.
 Open the workflow and get the artifact from there.
 
 https://github.com/M0diis/M0-CoreCord/actions
 
-## Usage & Discord
+### Usage & Discord
 
 To use this integration you have to have CoreProtect installed and have a Discord server.
 
@@ -51,7 +66,7 @@ You also need to create and invite a Bot User to your Discord server.
 You can find all the required information on how to do so the Wiki:  
 https://github.com/M0diis/M0-CoreCord/wiki/Discord-BOT
 
-## Configuration
+### Configuration
 
 ```yaml
 ## MySQL Configuration
