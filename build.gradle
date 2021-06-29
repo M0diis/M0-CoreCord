@@ -51,13 +51,13 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT'
+    compileOnly 'io.papermc.paper:paper-api:1.17-R0.1-SNAPSHOT'
     compileOnly name: 'CoreProtect-19.5'
 
     implementation 'org.xerial:sqlite-jdbc:3.34.0'
+    implementation name: 'mysql-connector-java-8.0.24'
 
     implementation "org.bstats:bstats-bukkit:2.2.1"
-    implementation name: 'mysql-connector-java-8.0.24'
 
     implementation ('net.dv8tion:JDA:4.2.0_222') {
         exclude module: 'opus-java'

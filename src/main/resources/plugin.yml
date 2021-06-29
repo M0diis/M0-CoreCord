@@ -2,23 +2,23 @@ name: M0-CoreCord
 main: me.m0dii.CoreCord.CoreCord
 description: Discord integration for CoreProtect.
 version: 1.6
-api-version: 1.16
+api-version: 1.17
 author: M0dii
 depend: [CoreProtect]
 permissions:
   corecord.update.notify:
-    description: Notifies users with this permission that there is update.
+    description: Notifies users with this permission when there is update.
     default: op
   corecord.main:
     description: Main command.
     default: op
   corecord.comand.reload:
-    description: Reload command
+    description: Reload command.
     default: op
   corecord.comand.version:
-    description: Version command
+    description: Version command.
     default: op
 commands:
   corecord:
-    description: Main command
+    description: Main command.
     permission: corecord.main

@@ -30,7 +30,7 @@ public class CoreCo implements CommandExecutor
             {
                 if(args[0].equalsIgnoreCase("reload"))
                 {
-                    plugin.getCfg().reload(this.plugin);
+                    this.plugin.getCfg().reload(this.plugin);
     
                     sender.sendMessage("Configuration has been reloaded");
                 }
@@ -48,7 +48,7 @@ public class CoreCo implements CommandExecutor
             {
                 if(canUse(args[0], "reload", "corecord.command.reload", p))
                 {
-                    plugin.getCfg().reload(this.plugin);
+                    this.plugin.getCfg().reload(this.plugin);
                     
                     Messenger.sendFormat(p, "&aConfiguration has been reloaded.");
                 }

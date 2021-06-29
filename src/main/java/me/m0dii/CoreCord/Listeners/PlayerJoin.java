@@ -47,6 +47,6 @@ public class PlayerJoin implements Listener
                     });
                 }
             }
-        }, 50L);
+        }, 60L);
     }
 }
