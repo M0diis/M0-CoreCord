@@ -1,45 +1,48 @@
-[![Java CI with Gradle](https://github.com/M0diis/M0-CoreCord/actions/workflows/gradle.yml/badge.svg)](https://github.com/M0diis/M0-CoreCord/actions/workflows/gradle.yml)
+<!-- Variables -->
 
-# M0-CoreCord
-Discord integration for CoreProtect plugin.
+[resourceId]: 91863
 
-The integration works both SQLite and MySQL databases.
+[banner]: https://i.imgur.com/8cj7B0e.png
+[ratingImage]: https://img.shields.io/badge/dynamic/json.svg?color=brightgreen&label=rating&query=%24.rating.average&suffix=%20%2F%205&url=https%3A%2F%2Fapi.spiget.org%2Fv2%2Fresources%2F91863
+[buildImage]: https://github.com/M0diis/M0-CoreCord/actions/workflows/gradle.yml/badge.svg
+[releaseImage]: https://img.shields.io/github/v/release/M0diis/M0-CoreCord.svg?label=github%20release
+[downloadsImage]: https://img.shields.io/badge/dynamic/json.svg?color=brightgreen&label=downloads%20%28spigotmc.org%29&query=%24.downloads&url=https%3A%2F%2Fapi.spiget.org%2Fv2%2Fresources%2F91863
+[updatedImage]: https://badges.pufler.dev/updated/M0diis/M0-CoreCord
 
-Spigot page:
-https://www.spigotmc.org/resources/m0-corecord.91863/
+<!-- End of variables block -->
 
-## Development
+![Banner][banner]
+
+![build][buildImage] ![release][releaseImage] ![updated][updatedImage]  
+![downloads][downloadsImage] ![rating][ratingImage]
+
+## M0-CoreCord
+Discord integration for CoreProtect plugin, supports both SQLite and MySQL databases.
+
+### Development
 Building is quite simple.
 
-To build CoreCord, you need JDK 8 or higher installed on your system.
+To build CoreCord, you need JDK 8 or higher and Gradle installed on your system.
 
 Clone the repository or download the source code from releases.  
-Make sure you have gradle installed and run `gradlew shadowjar` to build the jar.  
-The jar can be found in `/build/libs/` folder. 
+Run `gradlew shadowjar` to build the jar.  
+The jar will be found created in `/build/libs/` folder. 
 
-JDA Pagination Utils
-- https://github.com/ygimenez/Pagination-Utils
+##### Example
+```
+git clone https://github.com/M0diis/M0-CoreCord.git
+cd M0-CoreCord
+gradlew shadowjar
+```
 
-SQLite driver
-- https://github.com/xerial/sqlite-jdbc
-
-MySQL driver
-- https://dev.mysql.com/downloads/connector/j/
-
-Java Discord API
-- https://github.com/DV8FromTheWorld/JDA
-
-Paper API
-- https://github.com/PaperMC/Paper
-
-## Dev-builds
+### Dev-builds
 
 All the development builds can be found on actions page.
 Open the workflow and get the artifact from there.
 
 https://github.com/M0diis/M0-CoreCord/actions
 
-## Usage & Discord
+### Usage & Discord
 
 To use this integration you have to have CoreProtect installed and have a Discord server.
 
@@ -51,7 +54,7 @@ You also need to create and invite a Bot User to your Discord server.
 You can find all the required information on how to do so the Wiki:  
 https://github.com/M0diis/M0-CoreCord/wiki/Discord-BOT
 
-## Configuration
+### Configuration
 
 ```yaml
 ## MySQL Configuration
@@ -106,3 +109,19 @@ allowed-roles:
 # Sends a lot of extra messages to the console
 debug: false
 ```
+
+#### Links
+
+- [Spigot Page](https://www.spigotmc.org/resources/m0-corecord.91863/)
+- [Issues](https://github.com/M0diis/M0-CoreCord/issues)
+  - [Bug report](https://github.com/M0diis/M0-CoreCord/issues/new?assignees=&labels=bug&template=bug_report.md&title=)
+  - [Feature request](https://github.com/M0diis/M0-CoreCord/issues/new?assignees=&labels=enhancement&template=feature.md)
+- [Pull requests](https://github.com/M0diis/M0-CoreCord/pulls)
+
+##### APIs
+- [JDA Pagination Utils](https://github.com/ygimenez/Pagination-Utils)
+- [SQLite driver](https://github.com/xerial/sqlite-jdbc)
+- [MySQL driver](https://dev.mysql.com/downloads/connector/j/)
+- [Java Discord API](https://github.com/DV8FromTheWorld/JDA)
+- [Paper API](https://github.com/PaperMC/Paper)
+
