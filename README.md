@@ -14,7 +14,7 @@
 
 ![Banner][banner]
 
-![build][buildImage] ![release][releaseImage] ![updated][updatedImage] ![license][licenseImage]
+![build][buildImage] ![release][releaseImage] ![license][licenseImage]  
 ![downloads][downloadsImage] ![rating][ratingImage]
 
 ## M0-CoreCord
