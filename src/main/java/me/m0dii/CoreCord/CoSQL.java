@@ -1,6 +1,8 @@
 package me.m0dii.CoreCord;
 
+import me.m0dii.CoreCord.Utils.Config;
 import me.m0dii.CoreCord.Utils.Messenger;
+import me.m0dii.CoreCord.Utils.Table;
 import me.m0dii.CoreCord.Utils.Utils;
 import net.coreprotect.CoreProtect;
 import org.bukkit.Bukkit;
@@ -13,7 +15,7 @@ import java.util.List;
 
 public class CoSQL
 {
-    static Connection connection;
+    public static Connection connection;
     
     private boolean useMySQL;
     private String host, database, username, password;

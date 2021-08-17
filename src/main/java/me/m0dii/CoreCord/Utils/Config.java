@@ -1,5 +1,6 @@
-package me.m0dii.CoreCord;
+package me.m0dii.CoreCord.Utils;
 
+import me.m0dii.CoreCord.CoreCord;
 import me.m0dii.CoreCord.Utils.Utils;
 import org.bukkit.configuration.file.FileConfiguration;
 

@@ -7,16 +7,16 @@ import org.bukkit.command.CommandSender;
 
 public class Messenger
 {
-    private static final CoreCord plugin = CoreCord.getPlugin(CoreCord.class);
+    private static final CoreCord plugin = CoreCord.instance;
     
-    public static void sendFormat(CommandSender s, String message)
+    public static void sendf(CommandSender s, String message)
     {
         s.sendMessage(format(message));
     }
     
-    public static void sendFormatR(CommandSender s, String message, String what, Object to)
+    public static void sendfr(CommandSender s, String message, String what, Object to)
     {
-        sendFormat(s, replace(message, what, to));
+        sendf(s, replace(message, what, to));
     }
     
     public static String replace(String in, String what, Object to)
@@ -33,7 +33,7 @@ public class Messenger
     {
         if(plugin.getCfg().debugEnabled())
         {
-            String prefix = "&3[CoreCord - DEBUG]&r ";
+            String prefix = "&3[&bCoreCord - DEBUG&3]&r ";
     
             Bukkit.getConsoleSender().sendMessage(format(prefix + msg));
         }

@@ -5,8 +5,11 @@ import com.github.ygimenez.method.Pages;
 import com.github.ygimenez.model.PaginatorBuilder;
 import com.github.ygimenez.type.Emote;
 import me.m0dii.CoreCord.Commands.CoreCo;
+import me.m0dii.CoreCord.Listeners.DiscordListener;
 import me.m0dii.CoreCord.Listeners.PlayerJoin;
+import me.m0dii.CoreCord.Utils.Config;
 import me.m0dii.CoreCord.Utils.Messenger;
+import me.m0dii.CoreCord.Utils.UpdateChecker;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import org.bstats.bukkit.Metrics;
@@ -29,6 +32,8 @@ import java.util.Map;
 
 public class CoreCord extends JavaPlugin
 {
+    public static CoreCord instance;
+    
     private Config cfg;
     
     private PluginManager pm;
@@ -66,6 +71,8 @@ public class CoreCord extends JavaPlugin
     
     public void onEnable()
     {
+        instance = this;
+        
         prepareConfig();
         
         this.pm = getServer().getPluginManager();
@@ -154,6 +161,8 @@ public class CoreCord extends JavaPlugin
             }
             catch(SQLException ex)
             {
+                Messenger.debug(ex.getMessage());
+                
                 ex.printStackTrace();
             }
         }

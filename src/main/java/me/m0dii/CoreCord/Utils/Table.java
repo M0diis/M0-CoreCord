@@ -1,4 +1,4 @@
-package me.m0dii.CoreCord;
+package me.m0dii.CoreCord.Utils;
 
 public enum Table {
     CHAT,

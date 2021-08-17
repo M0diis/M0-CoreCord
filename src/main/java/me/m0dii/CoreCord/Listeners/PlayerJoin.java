@@ -1,8 +1,8 @@
 package me.m0dii.CoreCord.Listeners;
 
-import me.m0dii.CoreCord.Config;
+import me.m0dii.CoreCord.Utils.Config;
 import me.m0dii.CoreCord.CoreCord;
-import me.m0dii.CoreCord.UpdateChecker;
+import me.m0dii.CoreCord.Utils.UpdateChecker;
 import me.m0dii.CoreCord.Utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

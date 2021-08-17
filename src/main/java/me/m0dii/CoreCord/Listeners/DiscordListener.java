@@ -1,8 +1,11 @@
-package me.m0dii.CoreCord;
+package me.m0dii.CoreCord.Listeners;
 
 import com.github.ygimenez.method.Pages;
 import com.github.ygimenez.model.Page;
 import com.github.ygimenez.type.PageType;
+import me.m0dii.CoreCord.CoSQL;
+import me.m0dii.CoreCord.Utils.Config;
+import me.m0dii.CoreCord.CoreCord;
 import me.m0dii.CoreCord.Utils.Messenger;
 import me.m0dii.CoreCord.Utils.Utils;
 import net.coreprotect.CoreProtect;

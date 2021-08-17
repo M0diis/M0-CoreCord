@@ -2,7 +2,6 @@ package me.m0dii.CoreCord.Commands;
 
 import me.m0dii.CoreCord.CoreCord;
 import me.m0dii.CoreCord.Utils.Messenger;
-import me.m0dii.CoreCord.Utils.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -18,7 +17,6 @@ public class CoreCo implements CommandExecutor
     {
         this.plugin = plugin;
     }
-    
     
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd,
@@ -37,10 +35,8 @@ public class CoreCo implements CommandExecutor
             }
         }
         
-        if(sender instanceof Player)
+        if(sender instanceof Player p)
         {
-            Player p = (Player)sender;
-    
             if(!p.hasPermission("corecord.main"))
                 return true;
     
@@ -48,14 +44,14 @@ public class CoreCo implements CommandExecutor
             {
                 if(canUse(args[0], "reload", "corecord.command.reload", p))
                 {
-                    this.plugin.getCfg().reload(this.plugin);
+                    plugin.getCfg().reload(this.plugin);
                     
-                    Messenger.sendFormat(p, "&aConfiguration has been reloaded.");
+                    Messenger.sendf(p, "&bConfiguration has been reloaded.");
                 }
     
                 if(canUse(args[0], "version", "corecord.command.version", p))
                 {
-                    Messenger.sendFormat(p, "&aYou are using CoreCord version &2" +
+                    Messenger.sendf(p, "&bYou are using CoreCord version &3" +
                             plugin.getDescription().getVersion());
                 }
             }

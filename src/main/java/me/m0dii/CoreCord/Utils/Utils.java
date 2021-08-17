@@ -35,7 +35,7 @@ public class Utils
         return ChatColor.translateAlternateColorCodes('&', text);
     }
     
-    public static String clearFormat(String text)
+    public static String strip(String text)
     {
         return ChatColor.stripColor(text);
     }
