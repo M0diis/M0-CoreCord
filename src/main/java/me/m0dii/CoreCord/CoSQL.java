@@ -1,5 +1,6 @@
 package me.m0dii.CoreCord;
 
+import me.m0dii.CoreCord.Utils.Messenger;
 import me.m0dii.CoreCord.Utils.Utils;
 import net.coreprotect.CoreProtect;
 import org.bukkit.Bukkit;
@@ -57,10 +58,9 @@ public class CoSQL
             }
             catch(ClassNotFoundException ex)
             {
-                if(debug)
-                    ex.printStackTrace();
-                else
-                    plugin.getLogger().info("Cannot find MySQL driver..");
+                Messenger.debug(ex.getMessage());
+                
+                Messenger.info("Cannot find MySQL driver..");
             }
         }
         else
@@ -71,10 +71,9 @@ public class CoSQL
             }
             catch(ClassNotFoundException ex)
             {
-                if(debug)
-                    ex.printStackTrace();
-                else
-                    plugin.getLogger().info("Cannot find SQLite driver..");
+                Messenger.debug(ex.getMessage());
+    
+                Messenger.info("Cannot find SQLite driver..");
             }
         }
         
@@ -94,28 +93,25 @@ public class CoSQL
                 {
                     String dataFolder = CoreProtect.getInstance().getDataFolder().toPath() + sep + "database.db";
                     
-                    if(debug)
-                        plugin.getLogger().info("JDBC db Location: " + dataFolder);
+                    Messenger.debug("JDBC db Location: " + dataFolder);
                     
                     connection = DriverManager.getConnection("jdbc:sqlite:" + dataFolder);
-                    
-                    if(debug)
-                        plugin.getLogger().info("Connection null: " + (connection == null));
+
+                    Messenger.debug("Connection null: " + (connection == null));
                 }
                 else
                 {
-                    plugin.getLogger().warning("Failed to connect to SQLite database..");
+                    Messenger.warn("Failed to connect to SQLite database..");
                 }
 
             }
         }
         catch(SQLException ex)
         {
-            plugin.getLogger().warning("Failed to connect to the database.");
-            plugin.getLogger().warning("Please check the config.");
+            Messenger.warn("Failed to connect to the database.");
+            Messenger.warn("Please check the config.");
     
-            if(debug)
-                ex.printStackTrace();
+            Messenger.debug(ex.getMessage());
         }
     }
     
@@ -240,8 +236,8 @@ public class CoSQL
         if(action.charAt(0) == '+')
             actionType = 1;
         
-        if(debug)
-            plugin.getLogger().info(String.valueOf(actionType));
+        
+        Messenger.debug("Looking up for action type: " + actionType);
     
         List<String> userIDs = getIDSbyNames(names);
         
@@ -256,8 +252,8 @@ public class CoSQL
         
         Table table = getTableByAction(action);
         
-        if(debug)
-            plugin.getLogger().info(String.valueOf(time));
+        
+        Messenger.debug("Looking up for time: " + time);
         
         if(table == null)
             return results;

@@ -37,20 +37,13 @@ public class DiscordListener extends ListenerAdapter
     public void onMessageReceived(MessageReceivedEvent e)
     {
         String[] args = e.getMessage().getContentRaw().split(" ");
-    
-        boolean debug = cfg.debugEnabled();
         
-        if(debug)
-        {
-            Messenger.info("Message: " + e.getMessage().getContentRaw());
-            
-            Messenger.info("Prefix: " + cfg.getBotPrefix());
-        }
+        Messenger.debug("Found message: " + e.getMessage().getContentRaw());
+        Messenger.debug("Found prefix: " + cfg.getBotPrefix());
         
         if(!args[0].startsWith(cfg.getBotPrefix()))
         {
-            if(debug)
-                Messenger.info("Message not starting with prefix. Ignoring.");
+            Messenger.debug("Message not starting with prefix. Ignoring.");
             
             return;
         }
@@ -83,8 +76,7 @@ public class DiscordListener extends ListenerAdapter
         
         if(m == null)
         {
-            if(debug)
-                Messenger.info("Member is null.");
+            Messenger.debug("Member is null.");
             
             return;
         }
@@ -94,9 +86,8 @@ public class DiscordListener extends ListenerAdapter
         for(Role r : m.getRoles())
             if(allowedRoleIDS.contains(r.getId()))
                 allowed = true;
-    
-        if(debug)
-            Messenger.info("User allowed to use commands: " + allowed);
+            
+        Messenger.info("User allowed to use commands: " + allowed);
     
         if(alias(cmd, "reload") && allowed)
         {
@@ -168,9 +159,8 @@ public class DiscordListener extends ListenerAdapter
             }
             catch(SQLException ex)
             {
-                if(debug)
-                    ex.printStackTrace();
-    
+                Messenger.debug(ex.getMessage());
+
                 embed.setDescription("Cannot find a connection to the database, reconnecting..");
     
                 coSQL.connect();
@@ -185,8 +175,7 @@ public class DiscordListener extends ListenerAdapter
         {
             if(alias(cmd, "lookup, lu, l"))
             {
-                if(debug)
-                    Messenger.info("Executing [ " + cmd + " ] command by " +
+                Messenger.debug("Executing [ " + cmd + " ] command by " +
                             "[ " + m.getUser().getAsTag() + " ] ");
     
                 String time = getInfo(args, "t:", "time:")
@@ -230,16 +219,13 @@ public class DiscordListener extends ListenerAdapter
                         
                         break;
                     }
-                
-                if(debug)
-                {
-                    Messenger.info("User: " + user);
-                    Messenger.info("Time: " + time);
-                    Messenger.info("Action: " + action);
-                    Messenger.info("Block: " + block);
-                    Messenger.info("Filter: " + filter);
-                    Messenger.info("Reverse: " + reverse);
-                }
+
+                Messenger.debug("User: " + user);
+                Messenger.debug("Time: " + time);
+                Messenger.debug("Action: " + action);
+                Messenger.debug("Block: " + block);
+                Messenger.debug("Filter: " + filter);
+                Messenger.debug("Reverse: " + reverse);
                 
                 try
                 {
@@ -359,8 +345,7 @@ public class DiscordListener extends ListenerAdapter
                 }
                 catch(SQLException ex)
                 {
-                    if(debug)
-                        ex.printStackTrace();
+                    Messenger.debug(ex.getMessage());
                     
                     Messenger.warn("SQL Exception has occurred..");
                     Messenger.warn("Attempting to reconnect..");

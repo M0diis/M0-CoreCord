@@ -35,7 +35,7 @@ public class CoreCord extends JavaPlugin
     
     public String getSpigotLink()
     {
-        return "https://www.spigotmc.org/resources/m0-corecord.91863/";
+        return "https://www.spigotmc.org/resources/91863/";
     }
     
     public Config getCfg()

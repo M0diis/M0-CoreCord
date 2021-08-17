@@ -1,6 +1,7 @@
 package me.m0dii.CoreCord.Utils;
 
 import me.m0dii.CoreCord.CoreCord;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -26,6 +27,16 @@ public class Messenger
     public static String format(String text)
     {
         return ChatColor.translateAlternateColorCodes('&', text);
+    }
+    
+    public static void debug(String msg)
+    {
+        if(plugin.getCfg().debugEnabled())
+        {
+            String prefix = "&3[CoreCord - DEBUG]&r ";
+    
+            Bukkit.getConsoleSender().sendMessage(format(prefix + msg));
+        }
     }
     
     public static void info(String msg)

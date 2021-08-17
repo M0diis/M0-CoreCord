@@ -6,7 +6,7 @@ plugins {
 compileJava.options.encoding = 'UTF-8'
 
 group 'me.m0dii'
-version '1.6'
+version '1.7.0'
 
 shadowJar {
     relocate 'org.bstats', 'me.m0dii.CoreCord'
@@ -52,7 +52,7 @@ repositories {
 
 dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.17-R0.1-SNAPSHOT'
-    compileOnly name: 'CoreProtect-19.5'
+    compileOnly name: 'CoreProtect-20.1'
 
     implementation 'org.xerial:sqlite-jdbc:3.34.0'
     implementation name: 'mysql-connector-java-8.0.24'

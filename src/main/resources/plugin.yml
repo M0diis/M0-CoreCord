@@ -1,7 +1,7 @@
 name: M0-CoreCord
 main: me.m0dii.CoreCord.CoreCord
 description: Discord integration for CoreProtect.
-version: 1.6
+version: 1.7.0
 api-version: 1.17
 author: M0dii
 depend: [CoreProtect]
