@@ -6,11 +6,11 @@
 # You can also use SQLite, but I strongly recommend
 # using MySQL instead.
 
-use-mysql: true
-mysql-host: "host-name"
+use-mysql: false
+mysql-host: "localhost"
 mysql-port: 3306
-mysql-database: "database-name"
-mysql-username: "database-user"
+mysql-database: "coreprotect"
+mysql-username: "root"
 # Leave '' if password not required
 mysql-password: "user-password"
 

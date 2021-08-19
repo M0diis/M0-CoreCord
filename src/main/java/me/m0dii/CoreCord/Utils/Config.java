@@ -1,7 +1,6 @@
 package me.m0dii.CoreCord.Utils;
 
 import me.m0dii.CoreCord.CoreCord;
-import me.m0dii.CoreCord.Utils.Utils;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.List;
@@ -83,18 +82,12 @@ public class Config
         this.allowedChannels = cfg.getStringList("channels-ids");
         
         Utils.setDateFormat(this.dateFormat);
-    
-        if(debugEnabled())
-        {
-            plugin.getLogger().info("Config has been loaded successfully.");
-    
-            plugin.getLogger().info("Allowed role IDs to use:");
-            
-            for(String r : allowedRoles)
-            {
-                plugin.getLogger().info(r);
-            }
-        }
+        
+        Messenger.debug("Config has been loaded successfully.");
+        Messenger.debug("Allowed role IDs to use the commands:");
+        
+        for(String r : allowedRoles)
+            Messenger.debug(r);
     }
     
     private String getStr(String path)
@@ -109,16 +102,22 @@ public class Config
     
     public String getHost()
     {
+        Messenger.debug("Host has been set to " + this.host);
+        
         return this.host;
     }
     
     public String getDatabase()
     {
+        Messenger.debug("Database has been set to " + this.database);
+        
         return this.database;
     }
     
     public String getUsername()
     {
+        Messenger.debug("Username has been set to " + this.username);
+        
         return this.username;
     }
     
@@ -129,6 +128,8 @@ public class Config
     
     public int getPort()
     {
+        Messenger.debug("Port has been set to " + this.database);
+        
         return this.port;
     }
     
@@ -139,6 +140,8 @@ public class Config
     
     public String getBotPrefix()
     {
+        Messenger.debug("Bot prefix has been set to " + this.botPrefix);
+        
         return this.botPrefix;
     }
     
@@ -149,6 +152,8 @@ public class Config
     
     public boolean debugEnabled()
     {
+        Messenger.debug("Debug has been enabled.");
+        
         return this.debugging;
     }
     
@@ -180,6 +185,13 @@ public class Config
     
     public int getRowsInPage()
     {
+        if(this.rowsInPage > 25)
+        {
+            rowsInPage = 25;
+            
+            Messenger.debug("Too many rows in one page. Setting to 25.");
+        }
+        
         return this.rowsInPage;
     }
     

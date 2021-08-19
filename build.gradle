@@ -9,7 +9,7 @@ group 'me.m0dii'
 version '1.7.1'
 
 shadowJar {
-    relocate 'org.bstats', 'me.m0dii.CoreCord'
+    relocate 'org.bstats', 'me.M0dii.CoreCord'
     minimize()
 
     archiveFileName = "M0-CoreCord-${version}.jar"

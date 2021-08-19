@@ -69,6 +69,14 @@ public class CoreCord extends JavaPlugin
         return this.coSQL;
     }
     
+    public void reloadConfig()
+    {
+        if(this.cfg == null)
+            this.cfg = new Config();
+        
+        this.cfg.reload(this);
+    }
+    
     public void onEnable()
     {
         instance = this;

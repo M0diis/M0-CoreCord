@@ -60,9 +60,8 @@ public class DiscordListener extends ListenerAdapter
             if(!cfg.getAllowedChannels().contains(channel.getId()))
                 return;
             
-        EmbedBuilder embed = new EmbedBuilder();
-    
-        embed.setAuthor("CoreCord")
+        EmbedBuilder embed = new EmbedBuilder()
+                .setAuthor("CoreCord")
                 .setFooter(e.getAuthor().getAsTag(), null)
                 .setColor(Color.CYAN);
         
@@ -94,13 +93,15 @@ public class DiscordListener extends ListenerAdapter
     
         if(alias(cmd, "reload") && allowed)
         {
-            this.cfg.reload(this.plugin);
+            plugin.reloadConfig();
         
             embed.setDescription("Configuration has been reloaded.");
             
             coSQL.connect();
         
             sendEmbed(channel, embed);
+            
+            Messenger.debug("Configuartion has been reloaded.");
             
             return;
         }
@@ -127,6 +128,13 @@ public class DiscordListener extends ListenerAdapter
         {
             CoreProtect co = CoreProtect.getInstance();
             
+            if(co == null)
+            {
+                Messenger.debug("CoreProtect instance was not found.");
+                
+                return;
+            }
+            
             embed.addField("CoreProtect", co.getDescription().getVersion(), false)
                     .addField("CoreCord", plugin.getDescription().getVersion(), false)
                     .addField("Server", plugin.getServer().getVersion(), false)
@@ -147,7 +155,6 @@ public class DiscordListener extends ListenerAdapter
                 if(connected)
                 {
                     embed.setDescription("Connection is established successfully.");
-    
                 }
                 else
                 {
@@ -162,6 +169,7 @@ public class DiscordListener extends ListenerAdapter
             }
             catch(SQLException ex)
             {
+                Messenger.warn("Failed to connect to the database..");
                 Messenger.debug(ex.getMessage());
 
                 embed.setDescription("Cannot find a connection to the database, reconnecting..");
@@ -212,17 +220,10 @@ public class DiscordListener extends ListenerAdapter
                 if(filter.trim().length() != 0 && !filter.isEmpty())
                     filters = Arrays.asList(filter.trim().split(","));
                 
-                boolean reverse = false;
-                
-                for(String arg : args)
-                    if(arg.equalsIgnoreCase("-r")
-                        || arg.equalsIgnoreCase("-reverse"))
-                    {
-                        reverse = true;
-                        
-                        break;
-                    }
-
+                boolean reverse = Arrays.stream(args).anyMatch(arg ->
+                        arg.equalsIgnoreCase("-r")
+                     || arg.equalsIgnoreCase("-reverse"));
+    
                 Messenger.debug("User: " + user);
                 Messenger.debug("Time: " + time);
                 Messenger.debug("Action: " + action);
@@ -351,7 +352,7 @@ public class DiscordListener extends ListenerAdapter
                     Messenger.debug(ex.getMessage());
                     
                     Messenger.warn("SQL Exception has occurred..");
-                    Messenger.warn("Attempting to reconnect..");
+                    Messenger.warn("Attempting to reconnect.");
                     
                     coSQL.connect();
                 }
