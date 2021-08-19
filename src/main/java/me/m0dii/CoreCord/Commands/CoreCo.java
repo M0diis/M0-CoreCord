@@ -28,7 +28,7 @@ public class CoreCo implements CommandExecutor
             {
                 if(args[0].equalsIgnoreCase("reload"))
                 {
-                    this.plugin.getCfg().reload(this.plugin);
+                    plugin.getCfg().reload(this.plugin);
     
                     sender.sendMessage("Configuration has been reloaded");
                 }

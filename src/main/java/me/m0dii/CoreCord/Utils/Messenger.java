@@ -41,11 +41,15 @@ public class Messenger
     
     public static void info(String msg)
     {
-        plugin.getLogger().info(msg);
+        String prefix = "&2[&aCoreCord - INFO&2]&r ";
+    
+        Bukkit.getConsoleSender().sendMessage(format(prefix + msg));
     }
     
     public static void warn(String msg)
     {
-        plugin.getLogger().warning(msg);
+        String prefix = "&6[&eCoreCord - WARN&6]&r ";
+    
+        Bukkit.getConsoleSender().sendMessage(format(prefix + msg));
     }
 }

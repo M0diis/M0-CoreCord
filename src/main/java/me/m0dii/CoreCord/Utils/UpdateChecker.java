@@ -34,7 +34,7 @@ public class UpdateChecker
             }
             catch (IOException ex)
             {
-                Messenger.info("Failed to check for updates. ");
+                Messenger.warn("Failed to check for updates. ");
                 
                 Messenger.debug(ex.getMessage());
             }

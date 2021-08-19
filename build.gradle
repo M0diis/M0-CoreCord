@@ -6,7 +6,7 @@ plugins {
 compileJava.options.encoding = 'UTF-8'
 
 group 'me.m0dii'
-version '1.7.0'
+version '1.7.1'
 
 shadowJar {
     relocate 'org.bstats', 'me.m0dii.CoreCord'

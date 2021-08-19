@@ -163,11 +163,11 @@ public class CoreCord extends JavaPlugin
             {
                 Messenger.debug(ex.getMessage());
                 
-                ex.printStackTrace();
+                Messenger.warn("Failed to close SQL connection..");
             }
         }
     
-        Messenger.info("M0-CoreCord has been disabled!");
+        Messenger.info("M0-CoreCord has been disabled.");
     }
     
     private void prepareConfig()
@@ -213,8 +213,7 @@ public class CoreCord extends JavaPlugin
             Messenger.warn("Discord BOT has failed to connect..");
             Messenger.warn("Please check the configuration and make sure token is correct.");
     
-            if(this.cfg.debugEnabled())
-                ex.printStackTrace();
+            Messenger.debug(ex.getMessage());
         }
     }
     
@@ -236,11 +235,11 @@ public class CoreCord extends JavaPlugin
                 out.close();
                 in.close();
             }
-            catch(Exception e)
+            catch(Exception ex)
             {
-                Messenger.warn("Error copying resource: " + e.getMessage());
+                Messenger.warn("Error copying config file..");
                 
-                e.printStackTrace();
+                Messenger.debug(ex.getMessage());
             }
         }
     }

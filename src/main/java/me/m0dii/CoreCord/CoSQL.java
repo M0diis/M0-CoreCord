@@ -49,9 +49,7 @@ public class CoSQL
     public void connect()
     {
         String sep = File.separator;
-        
-        boolean debug = cfg.debugEnabled();
-        
+
         if(useMySQL)
         {
             try
@@ -62,7 +60,7 @@ public class CoSQL
             {
                 Messenger.debug(ex.getMessage());
                 
-                Messenger.info("Cannot find MySQL driver..");
+                Messenger.warn("Cannot find MySQL driver..");
             }
         }
         else
@@ -75,7 +73,7 @@ public class CoSQL
             {
                 Messenger.debug(ex.getMessage());
     
-                Messenger.info("Cannot find SQLite driver..");
+                Messenger.warn("Cannot find SQLite driver..");
             }
         }
         
@@ -148,6 +146,13 @@ public class CoSQL
     
     private int getIDbyName(String name) throws SQLException
     {
+        if(connection == null)
+        {
+            Messenger.warn("Failed to establish a connection to the database..");
+            
+            return -1;
+        }
+        
         if(connection.isClosed())
             connect();
         
@@ -180,6 +185,13 @@ public class CoSQL
     
     private List<String> getIDSbyNames(String[] names) throws SQLException
     {
+        if(connection == null)
+        {
+            Messenger.warn("Failed to establish a connection to the database..");
+        
+            return new ArrayList<>();
+        }
+        
         if(connection.isClosed())
             connect();
         
@@ -211,20 +223,24 @@ public class CoSQL
     
         pst.close();
         
-        if(cfg.debugEnabled())
-        {
-            plugin.getLogger().info("Joined names: " + String.join(", ", names));
-            
-            for(String s : userIDS)
-                plugin.getLogger().info(s);
-        }
+        Messenger.debug("Joined names: " + String.join(", ", names));
+        
+        for(String s : userIDS)
+            Messenger.debug(s);
         
         return userIDS;
     }
     
     public List<String> lookUpData(String[] names, String action, String[] blocks, long time) throws SQLException
     {
-        if(connection == null || connection.isClosed())
+        if(connection == null)
+        {
+            Messenger.warn("Failed to establish a connection to the database..");
+        
+            return new ArrayList<>();
+        }
+        
+        if(connection.isClosed())
             connect();
         
         boolean debug = cfg.debugEnabled();
@@ -237,7 +253,6 @@ public class CoSQL
             actionType = 0;
         if(action.charAt(0) == '+')
             actionType = 1;
-        
         
         Messenger.debug("Looking up for action type: " + actionType);
     
