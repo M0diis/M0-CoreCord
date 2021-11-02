@@ -1,6 +1,6 @@
-package me.m0dii.CoreCord.Utils;
+package me.m0dii.corecord.utils;
 
-import me.m0dii.CoreCord.CoreCord;
+import me.m0dii.corecord.CoreCord;
 import org.bukkit.Bukkit;
 import org.bukkit.util.Consumer;
 
@@ -34,7 +34,7 @@ public class UpdateChecker
             }
             catch (IOException ex)
             {
-                Messenger.warn("Failed to check for updates. ");
+                Messenger.warn("Failed to check for updates.");
                 
                 Messenger.debug(ex.getMessage());
             }

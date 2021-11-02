@@ -1,17 +1,12 @@
-package me.m0dii.CoreCord.Utils;
+package me.m0dii.corecord.utils;
 
-import me.m0dii.CoreCord.CoreCord;
+import me.m0dii.corecord.CoreCord;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.List;
 
 public class Config
 {
-    public Config()
-    {
-    
-    }
-    
     private String cfgVersion;
     private boolean debugging;
     
@@ -40,7 +35,6 @@ public class Config
     public void reload(CoreCord plugin)
     {
         plugin.reloadConfig();
-        this.cfg = plugin.getConfig();
         
         this.load(plugin);
     }

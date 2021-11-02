@@ -16,6 +16,7 @@ mysql-password: "user-password"
 
 ## Discord BOT Token
 # https://discord.com/developers/applications
+# https://github.com/M0diis/M0-CoreCord/wiki/Discord-BOT
 discord-bot-token: "your-token"
 command-prefix: "co!"
 
@@ -51,7 +52,7 @@ channels-ids:
   - 'channel-id'
 
 ## Misc
-# Enable debugging only to find what's wrong
+# Enable debugging
 # Sends a lot of extra messages to the console
 debug: false
 

@@ -1,9 +1,9 @@
-package me.m0dii.CoreCord;
+package me.m0dii.corecord;
 
-import me.m0dii.CoreCord.Utils.Config;
-import me.m0dii.CoreCord.Utils.Messenger;
-import me.m0dii.CoreCord.Utils.Table;
-import me.m0dii.CoreCord.Utils.Utils;
+import me.m0dii.corecord.utils.Config;
+import me.m0dii.corecord.utils.Messenger;
+import me.m0dii.corecord.utils.Table;
+import me.m0dii.corecord.utils.Utils;
 import net.coreprotect.CoreProtect;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -11,6 +11,7 @@ import org.bukkit.plugin.Plugin;
 import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CoSQL
@@ -117,31 +118,17 @@ public class CoSQL
     
     private Table getTableByAction(String action)
     {
-        switch(action.toLowerCase().replaceAll("[-+]", ""))
-        {
-            case "block":
-                return Table.BLOCK;
-    
-            case "command":
-                return Table.COMMAND;
-    
-            case "container":
-                return Table.CONTAINER;
-                
-            case "drop":
-                return Table.DROP;
-    
-            case "chat":
-                return Table.CHAT;
-                
-            case "session":
-                return Table.SESSION;
-                
-            default:
-                break;
-        }
-        
-        return null;
+        return switch(action.toLowerCase().replaceAll("[-+]", ""))
+                {
+                    case "all" -> Table.ALL;
+                    case "block" -> Table.BLOCK;
+                    case "command" -> Table.COMMAND;
+                    case "container" -> Table.CONTAINER;
+                    case "drop" -> Table.DROP;
+                    case "chat" -> Table.CHAT;
+                    case "session" -> Table.SESSION;
+                    default -> null;
+                };
     }
     
     private int getIDbyName(String name) throws SQLException
@@ -249,10 +236,16 @@ public class CoSQL
         
         int actionType = -1;
         
-        if(action.charAt(0) == '-')
-            actionType = 0;
-        if(action.charAt(0) == '+')
-            actionType = 1;
+        if(action == null)
+            action = "all";
+        
+        if(action.length() > 0)
+        {
+            if(action.charAt(0) == '-')
+                actionType = 0;
+            if(action.charAt(0) == '+')
+                actionType = 1;
+        }
         
         Messenger.debug("Looking up for action type: " + actionType);
     
@@ -269,131 +262,136 @@ public class CoSQL
         
         Table table = getTableByAction(action);
         
-        
         Messenger.debug("Looking up for time: " + time);
         
         if(table == null)
             return results;
     
-        if(table.equals(Table.DROP))
+        switch(table)
         {
-            String query =
-            "SELECT " +
-            "co_item.time AS time, " +
-            "co_item.x, " +
-            "co_item.y, " +
-            "co_item.z, " +
-            "cmm.material as material, " +
-            "co_item.amount, " +
-            "cu.user as player, " +
-            "co_item.action as action " +
-            "FROM co_item " +
-            "LEFT JOIN co_material_map cmm on co_item.type = cmm.id " +
-            "LEFT JOIN co_user cu on co_item.user = cu.rowid " +
-            "WHERE co_item.time > UNIX_TIMESTAMP() - ? " +
-            "AND co_item.user IN ( query_names ) ";
-    
-            if(action.charAt(0) == '-')
-                actionType = 2;
-            if(action.charAt(0) == '+')
-                actionType = 3;
-    
-            if(actionType != -1)
-                query += " AND co_item.action = " + actionType;
-    
-            query = query.replace("query_names", in);
-            
-            getResults(results, query, time);
-        }
-    
-        if(table.equals(Table.CONTAINER))
-        {
-            String query =
-            "SELECT " +
-            "co_container.time AS time, " +
-            "co_container.x, " +
-            "co_container.y, " +
-            "co_container.z, " +
-            "cmm.material as material, " +
-            "co_container.rolled_back, " +
-            "co_container.action as action, " +
-            "co_container.amount, " +
-            "cu.user as player, " +
-            "cu.uuid as playeruuid " +
-            "FROM co_container " +
-            "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
-            "LEFT JOIN co_user cu on co_container.user = cu.rowid " +
-            "WHERE co_container.time > UNIX_TIMESTAMP() - ? " +
-            "AND co_container.user IN ( query_names ) ";
-    
-            if(action.charAt(0) == '-')
-                actionType = 0;
-            if(action.charAt(0) == '+')
-                actionType = 1;
-            
-            if(actionType != -1)
-                query += " AND co_container.action = " + actionType;
-            
-            query = query.replace("query_names", in);
-            
-            getResults(results, query, time);
-        }
-        
-        if(table.equals(Table.SESSION))
-        {
-            String query =
-            "SELECT " +
-            "co_session.time AS time, " +
-            "co_session.x, " +
-            "co_session.y, " +
-            "co_session.z, " +
-            "co_session.action AS action, " +
-            "cu.user AS player, " +
-            "cu.uuid AS playeruuid " +
-            "FROM co_session " +
-            "LEFT JOIN co_user cu on co_session.user = cu.rowid " +
-            "WHERE co_session.time > UNIX_TIMESTAMP() - ? " +
-            "AND co_session.user IN ( query_names ) ";
-            
-            if(actionType != -1)
-                query += " AND co_session.action = " + actionType;
-    
-            if(!useMySQL)
-                query = query.replace("UNIX_TIMESTAMP()",
-                        "strftime('%s', 'now')");
-            
-            query = query.replace("query_names", in);
-    
-            PreparedStatement pst = connection.prepareStatement(query);
-    
-            pst.setLong(1, time);
-
-            try(ResultSet result = pst.executeQuery())
-            {
-                while (result.next())
-                {
-                    StringBuilder values = new StringBuilder();
-            
-                    getDateAndXYZ(values, result);
-            
-                    values.append(result.getString("player"))
-                            .append(" ");
-            
-                    String ac = result.getString("action");
-            
-                    if(ac.equals("0"))
-                        values.append("logged out");
-                    if(ac.equals("1"))
-                        values.append("logged in");
-            
-                    results.add(values.toString());
-                }
+            case DROP -> getDropResults(time, results, action, in);
+            case CONTAINER -> getContainerResults(time, results, action, in);
+            case SESSION -> getSessionResults(time, results, actionType, in);
+            case BLOCK -> getBlockResults(blocks, time, results, actionType, in);
+            case COMMAND -> getCommandResults(time, results, in);
+            case CHAT -> getChatResults(time, results, in);
+            case ALL -> {
+                getDropResults(time, results, action, in);
+                getContainerResults(time, results, action, in);
+                getSessionResults(time, results, actionType, in);
+                getBlockResults(blocks, time, results, actionType, in);
+                getCommandResults(time, results, in);
             }
         }
+        
+        if(!useMySQL)
+            connection.close();
     
-        if(table.equals(Table.BLOCK))
-        {
-            String query =
+        return results;
+    }
+    
+    private void getChatResults(long time, List<String> results, String in) throws SQLException
+    {
+        String query =
+            "SELECT " +
+            "co_chat.time AS time, " +
+            "co_chat.x, " +
+            "co_chat.y, " +
+            "co_chat.z, " +
+            "co_chat.message as message, " +
+            "cu.user as player, " +
+            "cu.uuid as playeruuid " +
+            "FROM co_chat " +
+            "LEFT JOIN co_user cu on co_chat.user = cu.rowid " +
+            "WHERE co_chat.time > CURRENT_TIMESTAMP - ? " +
+            "AND co_chat.user IN ( query_names ) "
+            .replace("query_names", in);
+        
+        getMessageOrCommand(time, results, query);
+    }
+    
+    private void getContainerResults(long time, List<String> results, String action, String in) throws SQLException
+    {
+        String query =
+        "SELECT " +
+        "co_container.time AS time, " +
+        "co_container.x, " +
+        "co_container.y, " +
+        "co_container.z, " +
+        "cmm.material as material, " +
+        "co_container.rolled_back, " +
+        "co_container.action as action, " +
+        "co_container.amount, " +
+        "cu.user as player, " +
+        "cu.uuid as playeruuid " +
+        "FROM co_container " +
+        "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
+        "LEFT JOIN co_user cu on co_container.user = cu.rowid " +
+        "WHERE co_container.time > UNIX_TIMESTAMP() - ? " +
+        "AND co_container.user IN ( query_names ) ";
+    
+        int actionType = -1;
+        
+        if(action.charAt(0) == '-')
+            actionType = 0;
+        if(action.charAt(0) == '+')
+            actionType = 1;
+    
+        if(actionType != -1)
+            query += " AND co_container.action = " + actionType;
+        
+        query = query.replace("query_names", in);
+        
+        getResults(results, query, time);
+    }
+    
+    private void getDropResults(long time, List<String> results, String action, String in) throws SQLException
+    {
+        String query =
+        "SELECT " +
+        "co_item.time AS time, " +
+        "co_item.x, " +
+        "co_item.y, " +
+        "co_item.z, " +
+        "cmm.material as material, " +
+        "co_item.amount, " +
+        "cu.user as player, " +
+        "co_item.action as action " +
+        "FROM co_item " +
+        "LEFT JOIN co_material_map cmm on co_item.type = cmm.id " +
+        "LEFT JOIN co_user cu on co_item.user = cu.rowid " +
+        "WHERE co_item.time > UNIX_TIMESTAMP() - ? " +
+        "AND co_item.user IN ( query_names ) ";
+        
+        int actionType = -1;
+    
+        if(action.charAt(0) == '-')
+            actionType = 2;
+        if(action.charAt(0) == '+')
+            actionType = 3;
+    
+        if(actionType != -1)
+            query += " AND co_item.action = " + actionType;
+        
+        query = query.replace("query_names", in);
+        
+        getResults(results, query, time);
+    }
+    
+    private void getCommandResults(long time, List<String> results, String in) throws SQLException
+    {
+        String query =
+            "SELECT * FROM co_command " +
+            "WHERE co_command.time > UNIX_TIMESTAMP() - ? " +
+            "AND co_command.user IN ( query_names ) "
+            .replace("query_names", in);
+        
+        getMessageOrCommand(time, results, query);
+    }
+    
+    private void getBlockResults(String[] blocks, long time, List<String> results, int actionType, String in) throws SQLException
+    {
+        String query =
             "SELECT " +
             "co_block.time AS time, " +
             "co_block.x, " +
@@ -409,101 +407,105 @@ public class CoSQL
             "LEFT JOIN co_user cu on co_block.user = cu.rowid " +
             "WHERE co_block.time > UNIX_TIMESTAMP() - ? " +
             "AND co_block.user IN ( query_names ) ";
-            
-            if(actionType != -1)
-                query += " AND co_block.action = " + actionType;
-    
-            if(!useMySQL)
-                query = query.replace("UNIX_TIMESTAMP()",
-                        "strftime('%s', 'now')");
-    
-            query = query.replace("query_names", in);
-            
-            PreparedStatement pst = connection.prepareStatement(query);
-            
-            pst.setLong(1, time);
-            
-            try(ResultSet result = pst.executeQuery())
-            {
-                while (result.next())
-                {
-                    StringBuilder values = new StringBuilder();
-                    
-                    String mat = result.getString("material");
-                    
-                    if(blocks.length != 0)
-                    {
-                        boolean skip = true;
-                        
-                        for(String bl : blocks)
-                            if(mat.contains(bl.toLowerCase().trim()))
-                            {
-                                skip = false;
-                                
-                                break;
-                            }
-                        
-                        if(skip)
-                            continue;
-                    }
-                    
-                    getDateAndXYZ(values, result);
-                    
-                    values.append(result.getString("player"))
-                            .append(" ");
         
-                    String ac = result.getString("action");
-        
-                    if(ac.equals("0"))
-                        values.append("destroyed ");
-                    
-                    if(ac.equals("1"))
-                        values.append("placed ");
-        
-                    values.append(mat);
-        
-                    results.add(values.toString());
-                }
-            }
-        }
-    
-        if(table.equals(Table.COMMAND))
-        {
-            String query =
-            "SELECT * FROM co_command " +
-            "WHERE co_command.time > UNIX_TIMESTAMP() - ? " +
-            "AND co_command.user IN ( query_names ) ";
-    
-            query = query.replace("query_names", in);
-    
-            getMessageOrCommand(time, results, query);
-        }
-    
-        if(table.equals(Table.CHAT))
-        {
-            String query =
-            "SELECT " +
-            "co_chat.time AS time, " +
-            "co_chat.x, " +
-            "co_chat.y, " +
-            "co_chat.z, " +
-            "co_chat.message as message, " +
-            "cu.user as player, " +
-            "cu.uuid as playeruuid " +
-            "FROM co_chat " +
-            "LEFT JOIN co_user cu on co_chat.user = cu.rowid " +
-            "WHERE co_chat.time > CURRENT_TIMESTAMP - ? " +
-            "AND co_chat.user IN ( query_names ) ";
-    
-            query = query.replace("query_names", in);
-        
-            getMessageOrCommand(time, results, query);
-        }
+        if(actionType != -1)
+            query += " AND co_block.action = " + actionType;
         
         if(!useMySQL)
-            connection.close();
+            query = query.replace("UNIX_TIMESTAMP()",
+                    "strftime('%s', 'now')");
+        
+        query = query.replace("query_names", in);
+        
+        PreparedStatement pst = connection.prepareStatement(query);
+        
+        pst.setLong(1, time);
+        
+        try(ResultSet result = pst.executeQuery())
+        {
+            while (result.next())
+            {
+                StringBuilder values = new StringBuilder();
+                
+                String mat = result.getString("material");
+                
+                if(blocks.length != 0)
+                {
+                    boolean skip = Arrays.stream(blocks).noneMatch(bl -> mat.contains(bl.toLowerCase().trim()));
     
-        return results;
+                    if(skip) continue;
+                }
+                
+                getDateAndXYZ(values, result);
+                
+                values.append(result.getString("player"))
+                        .append(" ");
+    
+                String ac = result.getString("action");
+    
+                if(ac.equals("0"))
+                    values.append("destroyed ");
+                
+                if(ac.equals("1"))
+                    values.append("placed ");
+    
+                values.append(mat);
+    
+                results.add(values.toString());
+            }
+        }
+    }
+    
+    private void getSessionResults(long time, List<String> results, int actionType, String in) throws SQLException
+    {
+        String query =
+            "SELECT " +
+            "co_session.time AS time, " +
+            "co_session.x, " +
+            "co_session.y, " +
+            "co_session.z, " +
+            "co_session.action AS action, " +
+            "cu.user AS player, " +
+            "cu.uuid AS playeruuid " +
+            "FROM co_session " +
+            "LEFT JOIN co_user cu on co_session.user = cu.rowid " +
+            "WHERE co_session.time > UNIX_TIMESTAMP() - ? " +
+            "AND co_session.user IN ( query_names ) ";
+        
+        if(actionType != -1)
+            query += " AND co_session.action = " + actionType;
+        
+        if(!useMySQL)
+            query = query.replace("UNIX_TIMESTAMP()",
+                    "strftime('%s', 'now')");
+        
+        query = query.replace("query_names", in);
+        
+        PreparedStatement pst = connection.prepareStatement(query);
+        
+        pst.setLong(1, time);
+        
+        try(ResultSet result = pst.executeQuery())
+        {
+            while (result.next())
+            {
+                StringBuilder values = new StringBuilder();
+        
+                getDateAndXYZ(values, result);
+        
+                values.append(result.getString("player"))
+                        .append(" ");
+        
+                String ac = result.getString("action");
+        
+                if(ac.equals("0"))
+                    values.append("logged out");
+                if(ac.equals("1"))
+                    values.append("logged in");
+        
+                results.add(values.toString());
+            }
+        }
     }
     
     private void getMessageOrCommand(long time, List<String> results, String query) throws SQLException

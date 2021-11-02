@@ -1,15 +1,15 @@
-package me.m0dii.CoreCord;
+package me.m0dii.corecord;
 
 import com.github.ygimenez.exception.InvalidHandlerException;
 import com.github.ygimenez.method.Pages;
 import com.github.ygimenez.model.PaginatorBuilder;
 import com.github.ygimenez.type.Emote;
-import me.m0dii.CoreCord.Commands.CoreCo;
-import me.m0dii.CoreCord.Listeners.DiscordListener;
-import me.m0dii.CoreCord.Listeners.PlayerJoin;
-import me.m0dii.CoreCord.Utils.Config;
-import me.m0dii.CoreCord.Utils.Messenger;
-import me.m0dii.CoreCord.Utils.UpdateChecker;
+import me.m0dii.corecord.commands.CoreCo;
+import me.m0dii.corecord.listeners.DiscordListener;
+import me.m0dii.corecord.listeners.PlayerJoin;
+import me.m0dii.corecord.utils.Config;
+import me.m0dii.corecord.utils.Messenger;
+import me.m0dii.corecord.utils.UpdateChecker;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import org.bstats.bukkit.Metrics;
@@ -32,7 +32,12 @@ import java.util.Map;
 
 public class CoreCord extends JavaPlugin
 {
-    public static CoreCord instance;
+    private static CoreCord instance;
+    
+    public static CoreCord getInstance()
+    {
+        return instance;
+    }
     
     private Config cfg;
     
@@ -69,14 +74,6 @@ public class CoreCord extends JavaPlugin
         return this.coSQL;
     }
     
-    public void reloadConfig()
-    {
-        if(this.cfg == null)
-            this.cfg = new Config();
-        
-        this.cfg.reload(this);
-    }
-    
     public void onEnable()
     {
         instance = this;
@@ -85,9 +82,6 @@ public class CoreCord extends JavaPlugin
         
         this.pm = getServer().getPluginManager();
         
-        this.cfg = new Config();
-        this.cfg.load(this);
-    
         this.msgListener = new DiscordListener(this);
         
         this.coSQL = new CoSQL(this);
@@ -191,6 +185,9 @@ public class CoreCord extends JavaPlugin
         }
     
         YamlConfiguration.loadConfiguration(configFile);
+    
+        this.cfg = new Config();
+        this.cfg.load(this);
     }
     
     private void initializeDiscordBOT()

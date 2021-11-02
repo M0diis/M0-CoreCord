@@ -1,7 +1,7 @@
-package me.m0dii.CoreCord.Commands;
+package me.m0dii.corecord.commands;
 
-import me.m0dii.CoreCord.CoreCord;
-import me.m0dii.CoreCord.Utils.Messenger;
+import me.m0dii.corecord.CoreCord;
+import me.m0dii.corecord.utils.Messenger;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -28,7 +28,7 @@ public class CoreCo implements CommandExecutor
             {
                 if(args[0].equalsIgnoreCase("reload"))
                 {
-                    plugin.getCfg().reload(this.plugin);
+                    this.plugin.getCfg().reload(this.plugin);
     
                     sender.sendMessage("Configuration has been reloaded");
                 }
@@ -42,14 +42,14 @@ public class CoreCo implements CommandExecutor
     
             if(args.length == 1 && p.hasPermission(""))
             {
-                if(canUse(args[0], "reload", "corecord.command.reload", p))
+                if(allowedToUse(args, "reload", p))
                 {
-                    plugin.getCfg().reload(this.plugin);
-                    
+                    this.plugin.getCfg().reload(this.plugin);
+    
                     Messenger.sendf(p, "&bConfiguration has been reloaded.");
                 }
     
-                if(canUse(args[0], "version", "corecord.command.version", p))
+                if(allowedToUse(args, "version", p))
                 {
                     Messenger.sendf(p, "&bYou are using CoreCord version &3" +
                             plugin.getDescription().getVersion());
@@ -60,8 +60,8 @@ public class CoreCo implements CommandExecutor
         return true;
     }
     
-    private static boolean canUse(String arg, String cmd, String perm, Player pl)
+    private boolean allowedToUse(String[] args, String cmd, Player pl)
     {
-        return arg.equalsIgnoreCase(cmd) && pl.hasPermission(perm);
+        return args[0].equalsIgnoreCase(cmd) && pl.hasPermission("corecord.command." + cmd);
     }
 }

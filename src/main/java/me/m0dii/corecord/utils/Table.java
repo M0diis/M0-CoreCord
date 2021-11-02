@@ -1,4 +1,4 @@
-package me.m0dii.CoreCord.Utils;
+package me.m0dii.corecord.utils;
 
 public enum Table {
     CHAT,
@@ -7,5 +7,6 @@ public enum Table {
     CONTAINER,
     ENTITY,
     SESSION,
-    DROP
+    DROP,
+    ALL
 }

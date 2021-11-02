@@ -1,6 +1,6 @@
-package me.m0dii.CoreCord.Libraries;
+package me.m0dii.corecord.libraries;
 
-import me.m0dii.CoreCord.CoreCord;
+import me.m0dii.corecord.CoreCord;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;

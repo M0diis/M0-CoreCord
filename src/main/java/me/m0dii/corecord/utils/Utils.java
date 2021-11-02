@@ -1,6 +1,6 @@
-package me.m0dii.CoreCord.Utils;
+package me.m0dii.corecord.utils;
 
-import me.m0dii.CoreCord.CoreCord;
+import me.m0dii.corecord.CoreCord;
 import org.bukkit.ChatColor;
 
 import java.text.SimpleDateFormat;

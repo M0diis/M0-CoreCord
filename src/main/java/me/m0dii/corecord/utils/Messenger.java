@@ -1,13 +1,13 @@
-package me.m0dii.CoreCord.Utils;
+package me.m0dii.corecord.utils;
 
-import me.m0dii.CoreCord.CoreCord;
+import me.m0dii.corecord.CoreCord;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 public class Messenger
 {
-    private static final CoreCord plugin = CoreCord.instance;
+    private static final CoreCord plugin = CoreCord.getInstance();
     
     public static void sendf(CommandSender s, String message)
     {

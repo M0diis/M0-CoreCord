@@ -1,9 +1,9 @@
-package me.m0dii.CoreCord.Listeners;
+package me.m0dii.corecord.listeners;
 
-import me.m0dii.CoreCord.Utils.Config;
-import me.m0dii.CoreCord.CoreCord;
-import me.m0dii.CoreCord.Utils.UpdateChecker;
-import me.m0dii.CoreCord.Utils.Utils;
+import me.m0dii.corecord.utils.Config;
+import me.m0dii.corecord.CoreCord;
+import me.m0dii.corecord.utils.Messenger;
+import me.m0dii.corecord.utils.UpdateChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -36,13 +36,14 @@ public class PlayerJoin implements Listener
                     {
                         String curr = this.plugin.getDescription().getVersion();
                         
-                        if (!curr.equalsIgnoreCase(
-                                ver.replace("v", "")))
+                        if (!curr.equals(ver.replace("v", ""))
+                            && p.isOnline())
                         {
-                            p.sendMessage(Utils.format("&eYou are running an outdated version of M0-CoreCord." +
+                            Messenger.sendf(p,
+                            "&eYou are running an outdated version of M0-CoreCord." +
                                     "\n&eLatest version: &6" + ver + ", &eyou are using: &6" + curr +
                                     "\n&eYou can download the latest version on Spigot:" +
-                                    "\n&e" + plugin.getSpigotLink()));
+                                    "\n&e" + plugin.getSpigotLink());
                         }
                     });
                 }

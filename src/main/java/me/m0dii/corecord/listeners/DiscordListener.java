@@ -1,19 +1,18 @@
-package me.m0dii.CoreCord.Listeners;
+package me.m0dii.corecord.listeners;
 
 import com.github.ygimenez.method.Pages;
 import com.github.ygimenez.model.Page;
 import com.github.ygimenez.type.PageType;
-import me.m0dii.CoreCord.CoSQL;
-import me.m0dii.CoreCord.Utils.Config;
-import me.m0dii.CoreCord.CoreCord;
-import me.m0dii.CoreCord.Utils.Messenger;
-import me.m0dii.CoreCord.Utils.Utils;
+import me.m0dii.corecord.CoSQL;
+import me.m0dii.corecord.utils.Config;
+import me.m0dii.corecord.CoreCord;
+import me.m0dii.corecord.utils.Messenger;
+import me.m0dii.corecord.utils.Utils;
 import net.coreprotect.CoreProtect;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -83,17 +82,13 @@ public class DiscordListener extends ListenerAdapter
             return;
         }
         
-        boolean allowed = false;
-        
-        for(Role r : m.getRoles())
-            if(allowedRoleIDS.contains(r.getId()))
-                allowed = true;
-            
+        boolean allowed = m.getRoles().stream().anyMatch(r -> allowedRoleIDS.contains(r.getId()));
+    
         Messenger.info("User allowed to use commands: " + allowed);
     
         if(alias(cmd, "reload") && allowed)
         {
-            plugin.reloadConfig();
+            plugin.getCfg().reload(this.plugin);
         
             embed.setDescription("Configuration has been reloaded.");
             
@@ -230,6 +225,10 @@ public class DiscordListener extends ListenerAdapter
                 Messenger.debug("Block: " + block);
                 Messenger.debug("Filter: " + filter);
                 Messenger.debug("Reverse: " + reverse);
+                
+                
+                if(action.isEmpty() || action.isBlank())
+                    action = "all";
                 
                 try
                 {
@@ -393,28 +392,13 @@ public class DiscordListener extends ListenerAdapter
     
         switch(type.toLowerCase())
         {
-            case "s": case "sec": case "seconds":
-                total += num;
-                break;
-                
-            case "m": case "min": case "minutes":
-                total += num * 60;
-                break;
-                
-            case "h": case "hour": case "hours":
-                total += num * 3600;
-                break;
-                
-            case "d": case "day": case "days":
-                total += num * 86400;
-                break;
-    
-            case "w": case "week": case "weeks":
-                total += num * 604800;
-                break;
-                
-            default:
-                break;
+            case "s", "sec", "seconds" -> total += num;
+            case "m", "min", "minutes" -> total += num * 60;
+            case "h", "hour", "hours" -> total += num * 3600;
+            case "d", "day", "days" -> total += num * 86400;
+            case "w", "week", "weeks" -> total += num * 604800;
+            default -> {
+            }
         }
     
         return total;
@@ -441,15 +425,7 @@ public class DiscordListener extends ListenerAdapter
     
     private boolean alias(String cmd, String names)
     {
-        String[] split = names.split(", ");
-        
-        for(String s : split)
-        {
-            if(cmd.equalsIgnoreCase(s))
-                return true;
-        }
-        
-        return false;
+        return Arrays.stream(names.split(", ")).anyMatch(cmd::equalsIgnoreCase);
     }
     
     private String clearSQL(String data)
