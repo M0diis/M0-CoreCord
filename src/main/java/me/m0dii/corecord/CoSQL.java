@@ -10,9 +10,10 @@ import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class CoSQL
 {
@@ -144,13 +145,13 @@ public class CoSQL
             connect();
         
         String query =
-        "SELECT * FROM" +
-        "(SELECT co_command.user AS ID, cu.user AS NAME " +
-        "FROM co_command " +
-        "LEFT JOIN co_user cu ON co_command.user = cu.rowid " +
-        "AND cu.user = ? " +
-        "GROUP BY ID) AS `NAMES_IDS` " +
-        "WHERE NAME = ? ";
+            "SELECT * FROM" +
+            "(SELECT co_command.user AS ID, cu.user AS NAME " +
+            "FROM co_command " +
+            "LEFT JOIN co_user cu ON co_command.user = cu.rowid " +
+            "AND cu.user = ? " +
+            "GROUP BY ID) AS `NAMES_IDS` " +
+            "WHERE NAME = ? ";
     
         PreparedStatement pst = connection.prepareStatement(query);
         
@@ -185,10 +186,10 @@ public class CoSQL
         List<String> userIDS = new ArrayList<>();
         
         String query =
-        "SELECT co_command.user AS ID, cu.user AS NAME " +
-        "FROM co_command " +
-        "LEFT JOIN co_user cu ON co_command.user = cu.rowid " +
-        "WHERE LOWER(cu.user) IN (";
+            "SELECT co_command.user AS ID, cu.user AS NAME " +
+            "FROM co_command " +
+            "LEFT JOIN co_user cu ON co_command.user = cu.rowid " +
+            "WHERE LOWER(cu.user) IN (";
         
         StringBuilder sb = new StringBuilder();
         
@@ -229,8 +230,6 @@ public class CoSQL
         
         if(connection.isClosed())
             connect();
-        
-        boolean debug = cfg.debugEnabled();
         
         List<String> results = new ArrayList<>();
         
@@ -281,6 +280,8 @@ public class CoSQL
                 getSessionResults(time, results, actionType, in);
                 getBlockResults(blocks, time, results, actionType, in);
                 getCommandResults(time, results, in);
+                
+                sortResults(results);
             }
         }
         
@@ -591,5 +592,30 @@ public class CoSQL
                 results.add(values.toString());
             }
         }
+    }
+    
+    private void sortResults(List<String> results)
+    {
+        results.sort(new Comparator<>()
+        {
+            final DateFormat f = new SimpleDateFormat(plugin.getCfg().getDateFormat());
+            @Override
+            
+            public int compare(String o1, String o2)
+            {
+                try
+                {
+                    o1 = o1.split(" \\| ")[0];
+                    o2 = o2.split(" \\| ")[0];
+                    
+                    return f.parse(o1).compareTo(f.parse(o2));
+                }
+                catch(ParseException e)
+                {
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        });
+    
     }
 }

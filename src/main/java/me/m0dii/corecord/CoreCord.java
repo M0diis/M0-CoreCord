@@ -41,16 +41,16 @@ public class CoreCord extends JavaPlugin
     
     private Config cfg;
     
+    public Config getCfg()
+    {
+        return this.cfg;
+    }
+    
     private PluginManager pm;
     
     public String getSpigotLink()
     {
         return "https://www.spigotmc.org/resources/91863/";
-    }
-    
-    public Config getCfg()
-    {
-        return this.cfg;
     }
     
     private JDA discord;

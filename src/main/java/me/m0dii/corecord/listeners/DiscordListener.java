@@ -321,8 +321,8 @@ public class DiscordListener extends ListenerAdapter
                     if(filters.size() != 0 &&
                             args[args.length - 1].equalsIgnoreCase("#count"))
                     {
-                        embed.setDescription(String.format("Found %d %s.", filterMatches, filterMatches == 1 ? "result" :
-                                "results"));
+                        embed.setDescription(String.format("Found %d %s.",
+                                filterMatches, filterMatches == 1 ? "result" : "results"));
                         
                         embed.clearFields();
         

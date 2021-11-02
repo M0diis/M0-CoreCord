@@ -8,7 +8,7 @@ import java.util.List;
 public class Config
 {
     private String cfgVersion;
-    private boolean debugging;
+    private boolean debugging = false;
     
     private boolean useMySQL;
     private String host, database, username, password; // tablePrefix;
@@ -144,10 +144,8 @@ public class Config
         return this.allowedRoles;
     }
     
-    public boolean debugEnabled()
+    public boolean isDebugEnabled()
     {
-        Messenger.debug("Debug has been enabled.");
-        
         return this.debugging;
     }
     

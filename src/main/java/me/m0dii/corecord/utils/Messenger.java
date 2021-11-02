@@ -31,7 +31,7 @@ public class Messenger
     
     public static void debug(String msg)
     {
-        if(plugin.getCfg().debugEnabled())
+        if(plugin.getCfg().isDebugEnabled())
         {
             String prefix = "&3[&bCoreCord - DEBUG&3]&r ";
     
