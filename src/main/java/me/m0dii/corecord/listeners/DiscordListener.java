@@ -84,7 +84,7 @@ public class DiscordListener extends ListenerAdapter
         
         boolean allowed = m.getRoles().stream().anyMatch(r -> allowedRoleIDS.contains(r.getId()));
     
-        Messenger.info("User allowed to use commands: " + allowed);
+        Messenger.debug("User allowed to use commands: " + allowed);
     
         if(alias(cmd, "reload") && allowed)
         {

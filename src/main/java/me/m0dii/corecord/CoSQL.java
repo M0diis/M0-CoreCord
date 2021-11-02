@@ -14,6 +14,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CoSQL
 {
@@ -212,10 +213,9 @@ public class CoSQL
         pst.close();
         
         Messenger.debug("Joined names: " + String.join(", ", names));
-        
-        for(String s : userIDS)
-            Messenger.debug(s);
-        
+        Messenger.debug("User IDS: " + String.join(", ", userIDS));
+    
+    
         return userIDS;
     }
     
@@ -250,14 +250,10 @@ public class CoSQL
     
         List<String> userIDs = getIDSbyNames(names);
         
-        StringBuilder inb = new StringBuilder();
+        if(userIDs.size() == 0)
+            return results;
         
-        for(String id : userIDs)
-            inb.append("'").append(id).append("',");
-        
-        inb.deleteCharAt(inb.length() - 1);
-        
-        String in = inb.toString();
+        String in = userIDs.stream().map(str -> "'" + str + "'").collect(Collectors.joining(","));
         
         Table table = getTableByAction(action);
         
