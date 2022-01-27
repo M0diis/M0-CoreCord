@@ -57,7 +57,7 @@ public class CoSQL
         {
             try
             {
-                Class.forName("com.mysql.cj.jdbc.Drive");
+                Class.forName("com.mysql.cj.jdbc.Driver");
             }
             catch(ClassNotFoundException ex)
             {
@@ -201,21 +201,18 @@ public class CoSQL
         sb.append(") GROUP BY ID; ");
         
         query += sb.toString();
-        
-        PreparedStatement pst = connection.prepareStatement(query);
-        
-        try(ResultSet result = pst.executeQuery())
+    
+        try(PreparedStatement pst = connection.prepareStatement(query))
         {
-            while (result.next())
+            ResultSet result = pst.executeQuery();
+            
+            while(result.next())
                 userIDS.add(result.getString("ID"));
         }
     
-        pst.close();
-        
         Messenger.debug("Joined names: " + String.join(", ", names));
         Messenger.debug("User IDS: " + String.join(", ", userIDS));
-    
-    
+        
         return userIDS;
     }
     
@@ -310,22 +307,22 @@ public class CoSQL
     private void getContainerResults(long time, List<String> results, String action, String in) throws SQLException
     {
         String query =
-        "SELECT " +
-        "co_container.time AS time, " +
-        "co_container.x, " +
-        "co_container.y, " +
-        "co_container.z, " +
-        "cmm.material as material, " +
-        "co_container.rolled_back, " +
-        "co_container.action as action, " +
-        "co_container.amount, " +
-        "cu.user as player, " +
-        "cu.uuid as playeruuid " +
-        "FROM co_container " +
-        "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
-        "LEFT JOIN co_user cu on co_container.user = cu.rowid " +
-        "WHERE co_container.time > UNIX_TIMESTAMP() - ? " +
-        "AND co_container.user IN ( query_names ) ";
+            "SELECT " +
+            "co_container.time AS time, " +
+            "co_container.x, " +
+            "co_container.y, " +
+            "co_container.z, " +
+            "cmm.material as material, " +
+            "co_container.rolled_back, " +
+            "co_container.action as action, " +
+            "co_container.amount, " +
+            "cu.user as player, " +
+            "cu.uuid as playeruuid " +
+            "FROM co_container " +
+            "LEFT JOIN co_material_map cmm on co_container.type = cmm.id " +
+            "LEFT JOIN co_user cu on co_container.user = cu.rowid " +
+            "WHERE co_container.time > UNIX_TIMESTAMP() - ? " +
+            "AND co_container.user IN ( query_names ) ";
     
         int actionType = -1;
         
@@ -345,20 +342,20 @@ public class CoSQL
     private void getDropResults(long time, List<String> results, String action, String in) throws SQLException
     {
         String query =
-        "SELECT " +
-        "co_item.time AS time, " +
-        "co_item.x, " +
-        "co_item.y, " +
-        "co_item.z, " +
-        "cmm.material as material, " +
-        "co_item.amount, " +
-        "cu.user as player, " +
-        "co_item.action as action " +
-        "FROM co_item " +
-        "LEFT JOIN co_material_map cmm on co_item.type = cmm.id " +
-        "LEFT JOIN co_user cu on co_item.user = cu.rowid " +
-        "WHERE co_item.time > UNIX_TIMESTAMP() - ? " +
-        "AND co_item.user IN ( query_names ) ";
+            "SELECT " +
+            "co_item.time AS time, " +
+            "co_item.x, " +
+            "co_item.y, " +
+            "co_item.z, " +
+            "cmm.material as material, " +
+            "co_item.amount, " +
+            "cu.user as player, " +
+            "co_item.action as action " +
+            "FROM co_item " +
+            "LEFT JOIN co_material_map cmm on co_item.type = cmm.id " +
+            "LEFT JOIN co_user cu on co_item.user = cu.rowid " +
+            "WHERE co_item.time > UNIX_TIMESTAMP() - ? " +
+            "AND co_item.user IN ( query_names ) ";
         
         int actionType = -1;
     

@@ -6,10 +6,10 @@ plugins {
 compileJava.options.encoding = 'UTF-8'
 
 group 'me.m0dii'
-version '1.7.2'
+version '1.7.3'
 
 shadowJar {
-    relocate 'org.bstats', 'me.M0dii.CoreCord'
+    relocate 'org.bstats', 'me.m0dii.corecord'
     minimize()
 
     archiveFileName = "M0-CoreCord-${version}.jar"
