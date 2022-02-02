@@ -14,7 +14,7 @@ public class Config
     private String host, database, username, password; // tablePrefix;
     private int port;
     
-    private String embedLeft, embedRight, embedClose;
+    private String embedLeft, embedRight, embedClose, embedColor;
     private boolean deleteOnClose;
     private int rowsInPage;
     
@@ -66,6 +66,7 @@ public class Config
         this.embedLeft = getStr("embed-page-left");
         this.embedRight = getStr("embed-page-right");
         this.embedClose = getStr("embed-close");
+        this.embedColor = getStr("embed-color");
         
         this.dateFormat = getStr("date-format");
         
@@ -163,6 +164,14 @@ public class Config
             return "➡️️";
         
         return this.embedRight;
+    }
+    
+    public String getEmbedColor()
+    {
+        if(this.embedLeft.isEmpty())
+            return "#00FFFF";
+        
+        return this.embedColor;
     }
     
     public boolean deleteOnClose()

@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DiscordListener extends ListenerAdapter
 {
@@ -62,7 +63,7 @@ public class DiscordListener extends ListenerAdapter
         EmbedBuilder embed = new EmbedBuilder()
                 .setAuthor("CoreCord")
                 .setFooter(e.getAuthor().getAsTag(), null)
-                .setColor(Color.CYAN);
+                .setColor(Color.decode(plugin.getCfg().getEmbedColor()));
         
         if(alias(cmd, "ping"))
         {
@@ -167,7 +168,7 @@ public class DiscordListener extends ListenerAdapter
                 Messenger.warn("Failed to connect to the database..");
                 Messenger.debug(ex.getMessage());
 
-                embed.setDescription("Cannot find a connection to the database, reconnecting..");
+                embed.setDescription("Cannot find a connection to the database, trying to reconnect..");
     
                 coSQL.connect();
     
@@ -218,6 +219,10 @@ public class DiscordListener extends ListenerAdapter
                 boolean reverse = Arrays.stream(args).anyMatch(arg ->
                         arg.equalsIgnoreCase("-r")
                      || arg.equalsIgnoreCase("-reverse"));
+                
+                boolean file = Arrays.stream(args).anyMatch(arg ->
+                        arg.equalsIgnoreCase("-f")
+                     || arg.equalsIgnoreCase("-file"));
     
                 Messenger.debug("User: " + user);
                 Messenger.debug("Time: " + time);
@@ -226,13 +231,20 @@ public class DiscordListener extends ListenerAdapter
                 Messenger.debug("Filter: " + filter);
                 Messenger.debug("Reverse: " + reverse);
                 
-                
                 if(action.isEmpty() || action.isBlank())
                     action = "all";
                 
                 try
                 {
                     List<String> results = coSQL.lookUpData(users, action, blocks, timeToSeconds(time));
+                    
+                    if(file)
+                    {
+                        outputFile(results, channel);
+                        
+                        return;
+                    }
+                    
                     ArrayList<Page> pages = new ArrayList<>();
                     
                     int rows = 0;
@@ -308,7 +320,7 @@ public class DiscordListener extends ListenerAdapter
             
                             embed = new EmbedBuilder()
                                     .setAuthor("CoreCord")
-                                    .setColor(Color.CYAN);
+                                    .setColor(Color.decode(plugin.getCfg().getEmbedColor()));
             
                             rows = 0;
                         }
@@ -357,6 +369,20 @@ public class DiscordListener extends ListenerAdapter
                 }
             }
         }
+    }
+    
+    private void outputFile(List<String> results, MessageChannel channel)
+    {
+        if(results.size() == 0)
+        {
+            channel.sendMessage("No results found.").queue();
+            
+            return;
+        }
+        
+        String sb = results.stream().map(s -> s + "\n").collect(Collectors.joining());
+    
+        channel.sendFile(sb.getBytes(), "results.txt").queue();
     }
     
     private long timeToSeconds(String time)

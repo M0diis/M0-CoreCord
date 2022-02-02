@@ -34,6 +34,7 @@ delete-on-close: false
 embed-page-left: '⬅️'
 embed-page-right: '➡️'
 embed-close: '❌'
+embed-color: '#00FFFF'
 rows-in-page: 5
 # Whether to always show number of results in embed description
 # without need to #count
