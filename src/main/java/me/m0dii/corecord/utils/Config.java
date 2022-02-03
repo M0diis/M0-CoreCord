@@ -81,7 +81,8 @@ public class Config
         this.embedFooter = getStr("embed-footer");
         
         messages.put(Message.EMBED_RESULT_COUNT, getStr("messages.discord.result-count"));
-        messages.put(Message.EMBED_NO_RESULTS, getStr("messages.game.no-results"));
+        messages.put(Message.EMBED_NO_RESULTS_FILTER, getStr("messages.discord.no-results-filter"));
+        messages.put(Message.EMBED_NO_RESULTS, getStr("messages.discord.no-results"));
         messages.put(Message.GAME_CONFIG_RELOAD, getStr("messages.game.config-reloaded"));
         messages.put(Message.COORDINATE_ROW, getStr("messages.discord.coordinates"));
         
