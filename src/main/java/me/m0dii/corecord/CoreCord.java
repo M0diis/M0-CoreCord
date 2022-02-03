@@ -175,7 +175,7 @@ public class CoreCord extends JavaPlugin
     private void prepareConfig()
     {
         File configFile = new File(this.getDataFolder(), "config.yml");
-        
+
         if(!configFile.exists())
         {
             //noinspection ResultOfMethodCallIgnored
@@ -188,6 +188,8 @@ public class CoreCord extends JavaPlugin
     
         this.cfg = new Config();
         this.cfg.load(this);
+    
+        this.copy(this.getResource("config.yml_default"), new File(this.getDataFolder(), "config.yml_default"));
     }
     
     private void initializeDiscordBOT()

@@ -94,7 +94,7 @@ public class DiscordListener extends ListenerAdapter
         {
             plugin.getCfg().reload(this.plugin);
         
-            embed.setDescription("Configuration has been reloaded.");
+            embed.setDescription(cfg.getMessage(Message.EMBED_CONFIG_RELOAD));
             
             coSQL.connect();
         
@@ -193,7 +193,7 @@ public class DiscordListener extends ListenerAdapter
     
                 if(time.length() == 0 || time.trim().isEmpty())
                 {
-                    embed.setDescription("Please specify time to lookup.");
+                    embed.setDescription(cfg.getMessage(Message.EMBED_SPECIFY_TIME));
         
                     sendEmbed(channel, embed);
         

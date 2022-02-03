@@ -80,6 +80,8 @@ public class Config
         this.embedTitle = getStr("embed-title");
         this.embedFooter = getStr("embed-footer");
         
+        messages.put(Message.EMBED_SPECIFY_TIME, getStr("messages.discord.specify-time"));
+        messages.put(Message.EMBED_CONFIG_RELOAD, getStr("messages.discord.config-reloaded"));
         messages.put(Message.EMBED_RESULT_COUNT, getStr("messages.discord.result-count"));
         messages.put(Message.EMBED_NO_RESULTS_FILTER, getStr("messages.discord.no-results-filter"));
         messages.put(Message.EMBED_NO_RESULTS, getStr("messages.discord.no-results"));
