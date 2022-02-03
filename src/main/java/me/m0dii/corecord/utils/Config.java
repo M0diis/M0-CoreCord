@@ -3,7 +3,9 @@ package me.m0dii.corecord.utils;
 import me.m0dii.corecord.CoreCord;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Config
 {
@@ -14,7 +16,7 @@ public class Config
     private String host, database, username, password; // tablePrefix;
     private int port;
     
-    private String embedLeft, embedRight, embedClose, embedColor;
+    private String embedLeft, embedRight, embedClose, embedColor, embedTitle, embedFooter;
     private boolean deleteOnClose;
     private int rowsInPage;
     
@@ -32,6 +34,13 @@ public class Config
     
     FileConfiguration cfg;
     
+    private Map<Message, String> messages;
+    
+    public String getMessage(Message message)
+    {
+        return this.messages.getOrDefault(message, "");
+    }
+    
     public void reload(CoreCord plugin)
     {
         plugin.reloadConfig();
@@ -42,6 +51,7 @@ public class Config
     public void load(CoreCord plugin)
     {
         this.cfg = plugin.getConfig();
+        this.messages = new HashMap<>();
         
         this.useMySQL = cfg.getBoolean("use-mysql", true);
         
@@ -67,6 +77,13 @@ public class Config
         this.embedRight = getStr("embed-page-right");
         this.embedClose = getStr("embed-close");
         this.embedColor = getStr("embed-color");
+        this.embedTitle = getStr("embed-title");
+        this.embedFooter = getStr("embed-footer");
+        
+        messages.put(Message.EMBED_RESULT_COUNT, getStr("messages.discord.result-count"));
+        messages.put(Message.EMBED_NO_RESULTS, getStr("messages.game.no-results"));
+        messages.put(Message.GAME_CONFIG_RELOAD, getStr("messages.game.config-reloaded"));
+        messages.put(Message.COORDINATE_ROW, getStr("messages.discord.coordinates"));
         
         this.dateFormat = getStr("date-format");
         
@@ -135,8 +152,6 @@ public class Config
     
     public String getBotPrefix()
     {
-        Messenger.debug("Bot prefix has been set to " + this.botPrefix);
-        
         return this.botPrefix;
     }
     
@@ -172,6 +187,14 @@ public class Config
             return "#00FFFF";
         
         return this.embedColor;
+    }
+    
+    public String getEmbedTitle()
+    {
+        if(this.embedTitle.isEmpty())
+            return "CoreCord";
+        
+        return this.embedTitle;
     }
     
     public boolean deleteOnClose()
@@ -232,5 +255,10 @@ public class Config
     public boolean channelWhitelist()
     {
         return this.channelWhitelist;
+    }
+    
+    public String getEmbedFooter()
+    {
+        return embedFooter;
     }
 }

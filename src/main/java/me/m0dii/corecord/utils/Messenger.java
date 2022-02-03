@@ -5,9 +5,44 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Messenger
 {
     private static final CoreCord plugin = CoreCord.getInstance();
+    
+    private CommandSender receiver;
+    private List<String> msgs;
+    
+    public Messenger(CommandSender receiver)
+    {
+        this.receiver = receiver;
+        this.msgs = new ArrayList<>();
+    }
+    
+    public Messenger add(String msg)
+    {
+        this.msgs.add(format(msg));
+        
+        return this;
+    }
+    
+    public void send()
+    {
+        for(String msg : msgs)
+        {
+            this.receiver.sendMessage(msg);
+        }
+    }
+    
+    
+    public Messenger clear()
+    {
+        this.msgs.clear();
+        
+        return this;
+    }
     
     public static void sendf(CommandSender s, String message)
     {

@@ -1,15 +1,18 @@
 package me.m0dii.corecord.commands;
 
 import me.m0dii.corecord.CoreCord;
+import me.m0dii.corecord.utils.Message;
 import me.m0dii.corecord.utils.Messenger;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
+import net.coreprotect.CoreProtect;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class CoreCo implements CommandExecutor
+import java.util.ArrayList;
+import java.util.List;
+
+public class CoreCo implements CommandExecutor, TabCompleter
 {
     private final CoreCord plugin;
     
@@ -30,7 +33,7 @@ public class CoreCo implements CommandExecutor
                 {
                     this.plugin.getCfg().reload(this.plugin);
     
-                    sender.sendMessage("Configuration has been reloaded");
+                    Messenger.sendf(sender, plugin.getCfg().getMessage(Message.GAME_CONFIG_RELOAD));
                 }
             }
         }
@@ -46,13 +49,19 @@ public class CoreCo implements CommandExecutor
                 {
                     this.plugin.getCfg().reload(this.plugin);
     
-                    Messenger.sendf(p, "&bConfiguration has been reloaded.");
+                    Messenger.sendf(p, plugin.getCfg().getMessage(Message.GAME_CONFIG_RELOAD));
                 }
     
                 if(allowedToUse(args, "version", p))
                 {
-                    Messenger.sendf(p, "&bYou are using CoreCord version &3" +
-                            plugin.getDescription().getVersion());
+                    Messenger msg = new Messenger(p);
+                    
+                    msg.add("&bCoreProtect version: &3" + CoreProtect.getInstance().getDescription().getVersion())
+                       .add("&bCoreCord version: &3" + plugin.getDescription().getVersion())
+                       .add("&bServer version: &3" + plugin.getServer().getVersion())
+                       .add("&bOS: &3" + System.getProperty("os.name"))
+                       .add("&bBukkit: &3" + plugin.getServer().getBukkitVersion())
+                       .send();
                 }
             }
         }
@@ -63,5 +72,20 @@ public class CoreCo implements CommandExecutor
     private boolean allowedToUse(String[] args, String cmd, Player pl)
     {
         return args[0].equalsIgnoreCase(cmd) && pl.hasPermission("corecord.command." + cmd);
+    }
+    
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
+                                                @NotNull String alias, @NotNull String[] args)
+    {
+        List<String> completes = new ArrayList<>();
+        
+        if(args.length == 1)
+        {
+            completes.add("reload");
+            completes.add("version");
+        }
+        
+        return completes;
     }
 }

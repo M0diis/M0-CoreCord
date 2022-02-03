@@ -3,11 +3,10 @@ package me.m0dii.corecord.listeners;
 import com.github.ygimenez.method.Pages;
 import com.github.ygimenez.model.Page;
 import com.github.ygimenez.type.PageType;
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.m0dii.corecord.CoSQL;
-import me.m0dii.corecord.utils.Config;
+import me.m0dii.corecord.utils.*;
 import me.m0dii.corecord.CoreCord;
-import me.m0dii.corecord.utils.Messenger;
-import me.m0dii.corecord.utils.Utils;
 import net.coreprotect.CoreProtect;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
@@ -28,12 +27,15 @@ public class DiscordListener extends ListenerAdapter
     private final CoSQL coSQL;
     private final CoreCord plugin;
     private final Config cfg;
+    private boolean usePAPI;
     
     public DiscordListener(CoreCord plugin)
     {
         this.plugin = plugin;
         this.cfg = plugin.getCfg();
         this.coSQL = plugin.getCoSQL();
+    
+        this.usePAPI = plugin.getServer().getPluginManager().getPlugin("PlaceholderAPI") != null;
     }
     
     @Override
@@ -43,6 +45,7 @@ public class DiscordListener extends ListenerAdapter
         
         Messenger.debug("Found message: " + e.getMessage().getContentRaw());
         Messenger.debug("Found prefix: " + cfg.getBotPrefix());
+        Messenger.debug("Arg 0: " + args[0]);
         
         if(!args[0].startsWith(cfg.getBotPrefix()))
         {
@@ -50,7 +53,7 @@ public class DiscordListener extends ListenerAdapter
             
             return;
         }
-    
+        
         String cmd = args[0].replace(cfg.getBotPrefix(), "");
         
         Member m = e.getMember();
@@ -61,7 +64,7 @@ public class DiscordListener extends ListenerAdapter
                 return;
             
         EmbedBuilder embed = new EmbedBuilder()
-                .setAuthor("CoreCord")
+                .setAuthor(PlaceholderAPI.setPlaceholders(null, plugin.getCfg().getEmbedTitle()))
                 .setFooter(e.getAuthor().getAsTag(), null)
                 .setColor(Color.decode(plugin.getCfg().getEmbedColor()));
         
@@ -251,7 +254,10 @@ public class DiscordListener extends ListenerAdapter
     
                     if(results.size() == 0)
                     {
-                        embed.setDescription("No results found.");
+                        String msg = PlaceholderAPI.setPlaceholders(null,
+                                plugin.getCfg().getMessage(Message.EMBED_NO_RESULTS));
+    
+                        embed.setDescription(msg);
     
                         sendEmbed(channel, embed);
                         
@@ -261,7 +267,11 @@ public class DiscordListener extends ListenerAdapter
                     if(filters.size() == 0 &&
                             args[args.length - 1].equalsIgnoreCase("#count"))
                     {
-                        embed.setDescription("Found " + results.size() + " results.");
+                        String msg = PlaceholderAPI.setPlaceholders(null,
+                                plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
+                                      .replace("%count%", String.valueOf(results.size())));
+                        
+                        embed.setDescription(msg);
                         
                         sendEmbed(channel, embed);
                         
@@ -276,6 +286,25 @@ public class DiscordListener extends ListenerAdapter
         
                         String date = values[0];
                         String data = values[1];
+                        
+                        String xyz = data.split("\n")[0];
+                        String value = data.split("\n")[1];
+                        
+                        String[] xyzSplit = xyz.split(" ");
+                        
+                        String x = xyzSplit[0].replace("X:", "");
+                        String y = xyzSplit[1].replace("Y:", "");
+                        String z = xyzSplit[2].replace("Z:", "");
+                        
+                        String xyzRow = setPlaceholders(cfg.getMessage(Message.COORDINATE_ROW))
+                                .replace("%x%", x)
+                                .replace("%y%", y)
+                                .replace("%z%", z);
+                        
+                        Messenger.debug("XYZ: " + xyzRow);
+                        Messenger.debug("Value: " + value);
+                        
+                        data = xyzRow + "\n" + value;
                         
                         if(filters.size() != 0)
                         {
@@ -309,18 +338,28 @@ public class DiscordListener extends ListenerAdapter
                         rows++;
     
                         if(cfg.showCount())
-                            embed.setDescription("Found " + results.size() + " results.");
+                        {
+                            String msg = PlaceholderAPI.setPlaceholders(null,
+                                    plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
+                                            .replace("%count%", String.valueOf(results.size())));
+    
+                            embed.setDescription(msg);
+                        }
     
                         if(rows >= this.cfg.getRowsInPage())
                         {
-                            embed.setFooter("Page " + (pages.size() + 1) + " • " +
-                                    e.getAuthor().getAsTag());
+                            String footer = setPlaceholders(cfg.getEmbedFooter())
+                                    .replace("%page%", String.valueOf(pages.size() + 1))
+                                    .replace("%message_author_tag%", e.getAuthor().getAsTag())
+                                    .replace("%message_author_name%", e.getMember().getEffectiveName());
+                            
+                            embed.setFooter(footer);
                             
                             pages.add(new Page(PageType.EMBED, embed.build()));
             
                             embed = new EmbedBuilder()
-                                    .setAuthor("CoreCord")
-                                    .setColor(Color.decode(plugin.getCfg().getEmbedColor()));
+                                    .setAuthor(setPlaceholders(cfg.getMessage(Message.EMBED_TITLE)))
+                                    .setColor(Color.decode(cfg.getEmbedColor()));
             
                             rows = 0;
                         }
@@ -345,7 +384,7 @@ public class DiscordListener extends ListenerAdapter
                     
                     if(filters.size() != 0 && filterMatches == 0)
                     {
-                        embed.setDescription("No results found by specified filter.");
+                        embed.setDescription(setPlaceholders(cfg.getMessage(Message.EMBED_NO_RESULTS_FILTER)));
     
                         sendEmbed(channel, embed);
     
@@ -363,7 +402,7 @@ public class DiscordListener extends ListenerAdapter
                     Messenger.debug(ex.getMessage());
                     
                     Messenger.warn("SQL Exception has occurred..");
-                    Messenger.warn("Attempting to reconnect.");
+                    Messenger.warn("Attempting to reconnect..");
                     
                     coSQL.connect();
                 }
@@ -375,7 +414,8 @@ public class DiscordListener extends ListenerAdapter
     {
         if(results.size() == 0)
         {
-            channel.sendMessage("No results found.").queue();
+            channel.sendMessage(setPlaceholders(
+                    plugin.getCfg().getMessage(Message.EMBED_NO_RESULTS))).queue();
             
             return;
         }
@@ -437,6 +477,16 @@ public class DiscordListener extends ListenerAdapter
                 return clean(arg, lu1, lu2);
         
         return "";
+    }
+    
+    private String setPlaceholders(String text)
+    {
+        if(text == null || text.isEmpty())
+        {
+            return "";
+        }
+        
+        return usePAPI ? PlaceholderAPI.setPlaceholders(null, text) : text;
     }
     
     private String clean(String origin, String tr1, String tr2)
