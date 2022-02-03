@@ -5,6 +5,7 @@ version: 1.8.0
 api-version: 1.13
 author: M0dii
 depend: [CoreProtect]
+softdepend: [PlaceholderAPI]
 permissions:
   corecord.update.notify:
     description: Notifies users with this permission when there is update.
