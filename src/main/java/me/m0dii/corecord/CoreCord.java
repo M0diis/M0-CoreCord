@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -64,16 +63,6 @@ public class CoreCord extends JavaPlugin
         return this.discord;
     }
     
-    private CoSQL coSQL;
-    
-    public CoSQL getCoSQL()
-    {
-        if(coSQL == null)
-            this.coSQL = new CoSQL(this);
-        
-        return this.coSQL;
-    }
-    
     public void onEnable()
     {
         instance = this;
@@ -83,8 +72,6 @@ public class CoreCord extends JavaPlugin
         this.pm = getServer().getPluginManager();
         
         this.msgListener = new DiscordListener(this);
-        
-        this.coSQL = new CoSQL(this);
     
         pm.registerEvents(new PlayerJoin(this), this);
     
@@ -149,26 +136,6 @@ public class CoreCord extends JavaPlugin
         if(discord != null)
             this.discord.shutdownNow();
         
-        if(CoSQL.connection != null)
-        {
-            try
-            {
-                if(!CoSQL.connection.isClosed())
-                {
-                    CoSQL.connection.close();
-    
-                    Messenger.info("SQL connection has been closed successfully.");
-                }
-
-            }
-            catch(SQLException ex)
-            {
-                Messenger.debug(ex.getMessage());
-                
-                Messenger.warn("Failed to close SQL connection..");
-            }
-        }
-    
         Messenger.info("M0-CoreCord has been disabled.");
     }
     

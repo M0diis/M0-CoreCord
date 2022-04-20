@@ -18,6 +18,18 @@ public class Utils
         sdf = new SimpleDateFormat(format);
     }
     
+    public static String getDateFromTimestamp(long timestamp)
+    {
+        Instant instant = Instant.ofEpochSecond(timestamp);
+        
+        Date date = Date.from(instant);
+        
+        if(sdf == null)
+            sdf = new SimpleDateFormat(plugin.getCfg().getDateFormat());
+        
+        return sdf.format(date);
+    }
+    
     public static String getDateFromTimestamp(String timestamp)
     {
         Instant instant = Instant.ofEpochSecond(Long.parseLong(timestamp));

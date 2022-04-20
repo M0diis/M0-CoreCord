@@ -46,16 +46,20 @@ repositories {
     }
 
     maven {
-        url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
+        url 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
+    }
+
+    maven {
+        url 'https://maven.playpro.com'
     }
 }
 
 dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.17-R0.1-SNAPSHOT'
-    compileOnly name: 'CoreProtect-20.1'
+    compileOnly 'net.coreprotect:coreprotect:20.4'
 
-    implementation 'org.xerial:sqlite-jdbc:3.34.0'
-    implementation name: 'mysql-connector-java-8.0.24'
+//    implementation 'org.xerial:sqlite-jdbc:3.34.0'
+//    implementation name: 'mysql-connector-java-8.0.24'
 
     implementation "org.bstats:bstats-bukkit:2.2.1"
 

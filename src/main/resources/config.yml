@@ -1,19 +1,3 @@
-## MySQL Configuration
-# Make sure the values are the exact same
-# as in your CoreProtect config.
-# By default table prefix is co_
-
-# You can also use SQLite, but I strongly recommend
-# using MySQL instead.
-
-use-mysql: false
-mysql-host: "localhost"
-mysql-port: 3306
-mysql-database: "coreprotect"
-mysql-username: "root"
-# Leave '' if password not required
-mysql-password: "user-password"
-
 ## Discord BOT Token
 # https://discord.com/developers/applications
 # https://github.com/M0diis/M0-CoreCord/wiki/Discord-BOT
@@ -31,12 +15,15 @@ date-format: "yyyy-MM-dd HH:mm:ss"
 # Whether to delete the embed when close button pressed
 # If false, it will only hide the buttons.
 delete-on-close: false
-embed-page-left: '⬅️'
-embed-page-right: '➡️'
-embed-close: '❌'
-embed-color: '#00FFFF'
-embed-title: 'CoreCord'
-embed-footer: 'Page %page% • %message_author_tag%' # Or use %message_author_name% for name.
+
+embed:
+  page-left: '⬅️'
+  page-right: '➡️'
+  close: '❌'
+  color: '#00FFFF'
+  title: 'CoreCord'
+  footer: 'Page %page% • %message_author_tag%' # Or use %message_author_name% for name.
+
 rows-in-page: 5
 # Whether to always show number of results in embed description
 # without need to #count
@@ -59,7 +46,7 @@ messages:
     result-count: "Found %count% results."
     no-results: "No results found."
     no-results-filter: "No results found by the specified filter."
-    coordinates: "X: %x%, Y: %y%, Z: %z%"
+    coordinates: "World: %world% | X: %x%, Y: %y%, Z: %z%"
   game:
     config-reloaded: "&bConfiguration has been successfully reloaded."
 

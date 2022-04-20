@@ -4,10 +4,13 @@ import com.github.ygimenez.method.Pages;
 import com.github.ygimenez.model.Page;
 import com.github.ygimenez.type.PageType;
 import me.clip.placeholderapi.PlaceholderAPI;
-import me.m0dii.corecord.CoSQL;
-import me.m0dii.corecord.utils.*;
 import me.m0dii.corecord.CoreCord;
+import me.m0dii.corecord.utils.Config;
+import me.m0dii.corecord.utils.Message;
+import me.m0dii.corecord.utils.Messenger;
+import me.m0dii.corecord.utils.Utils;
 import net.coreprotect.CoreProtect;
+import net.coreprotect.CoreProtectAPI;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -16,7 +19,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import java.awt.*;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,17 +26,17 @@ import java.util.stream.Collectors;
 
 public class DiscordListener extends ListenerAdapter
 {
-    private final CoSQL coSQL;
+    private final CoreProtectAPI coAPI;
     private final CoreCord plugin;
     private final Config cfg;
-    private boolean usePAPI;
+    private final boolean usePAPI;
     
     public DiscordListener(CoreCord plugin)
     {
         this.plugin = plugin;
         this.cfg = plugin.getCfg();
-        this.coSQL = plugin.getCoSQL();
-    
+        this.coAPI = CoreProtect.getInstance().getAPI();
+        
         this.usePAPI = plugin.getServer().getPluginManager().getPlugin("PlaceholderAPI") != null;
     }
     
@@ -57,14 +59,26 @@ public class DiscordListener extends ListenerAdapter
         String cmd = args[0].replace(cfg.getBotPrefix(), "");
         
         Member m = e.getMember();
+        
+        if(m == null)
+        {
+            Messenger.debug("Member is null.");
+        
+            return;
+        }
+        
         MessageChannel channel = e.getChannel();
         
         if(cfg.channelWhitelist())
             if(!cfg.getAllowedChannels().contains(channel.getId()))
                 return;
-            
+    
+        String title = setPlaceholders(plugin.getCfg().getEmbedTitle())
+                .replace("%message_author_tag%", e.getAuthor().getAsTag())
+                .replace("%message_author_name%", e.getMember().getEffectiveName());
+        
         EmbedBuilder embed = new EmbedBuilder()
-                .setAuthor(PlaceholderAPI.setPlaceholders(null, plugin.getCfg().getEmbedTitle()))
+                .setAuthor(title)
                 .setFooter(e.getAuthor().getAsTag(), null)
                 .setColor(Color.decode(plugin.getCfg().getEmbedColor()));
         
@@ -79,25 +93,16 @@ public class DiscordListener extends ListenerAdapter
         
         List<String> allowedRoleIDS = cfg.getAllowedRoles();
         
-        if(m == null)
-        {
-            Messenger.debug("Member is null.");
-            
-            return;
-        }
-        
         boolean allowed = m.getRoles().stream().anyMatch(r -> allowedRoleIDS.contains(r.getId()));
     
         Messenger.debug("User allowed to use commands: " + allowed);
-    
+
         if(alias(cmd, "reload") && allowed)
         {
             plugin.getCfg().reload(this.plugin);
         
             embed.setDescription(cfg.getMessage(Message.EMBED_CONFIG_RELOAD));
             
-            coSQL.connect();
-        
             sendEmbed(channel, embed);
             
             Messenger.debug("Configuartion has been reloaded.");
@@ -135,58 +140,21 @@ public class DiscordListener extends ListenerAdapter
             }
             
             embed.addField("CoreProtect", co.getDescription().getVersion(), false)
-                    .addField("CoreCord", plugin.getDescription().getVersion(), false)
-                    .addField("Server", plugin.getServer().getVersion(), false)
-                    .addField("OS", System.getProperty("os.name"), false)
-                    .addField("Bukkit", plugin.getServer().getBukkitVersion(), false);
+                 .addField("CoreCord", plugin.getDescription().getVersion(), false)
+                 .addField("Server", plugin.getServer().getVersion(), false)
+                 .addField("OS", System.getProperty("os.name"), false)
+                 .addField("Bukkit", plugin.getServer().getBukkitVersion(), false);
             
             sendEmbed(channel, embed);
             
             return;
         }
-    
-        if(alias(cmd, "testconnection") && allowed)
-        {
-            try
-            {
-                boolean connected = !CoSQL.connection.isClosed();
-                
-                if(connected)
-                {
-                    embed.setDescription("Connection is established successfully.");
-                }
-                else
-                {
-                    embed.setDescription("Connection has not been found. Reconnecting..");
-    
-                    coSQL.connect();
-                }
-                
-                sendEmbed(channel, embed);
-                
-                return;
-            }
-            catch(SQLException ex)
-            {
-                Messenger.warn("Failed to connect to the database..");
-                Messenger.debug(ex.getMessage());
-
-                embed.setDescription("Cannot find a connection to the database, trying to reconnect..");
-    
-                coSQL.connect();
-    
-                sendEmbed(channel, embed);
-                
-                return;
-            }
-        }
-            
+        
         if(args.length >= 2 && allowed)
         {
             if(alias(cmd, "lookup, lu, l"))
             {
-                Messenger.debug("Executing [ " + cmd + " ] command by " +
-                            "[ " + m.getUser().getAsTag() + " ] ");
+                Messenger.debug("Executing [ " + cmd + " ] command by [ " + m.getUser().getAsTag() + " ] ");
     
                 String time = getInfo(args, "t:", "time:")
                         .replace(",", "");
@@ -202,16 +170,20 @@ public class DiscordListener extends ListenerAdapter
                 
                 String user = clearSQL(getInfo(args, "u:", "user:"));
                 
-                String[] users = user.split(",");
+                List<String> users = new ArrayList<>(Arrays.asList(user.split(",")));
     
                 String action = getInfo(args, "a:", "action:");
                 
                 String[] actions = action.split(",");
     
                 String block = getInfo(args, "b:", "block:");
+                
+                List<Object> blocks = new ArrayList<>(Arrays.asList(block.split(",")));
     
-                String[] blocks = block.split(",");
-    
+                String exBlock = getInfo(args, "e:", "exclude:");
+                
+                List<Object> excludeBlocks = new ArrayList<>(Arrays.asList(exBlock.split(",")));
+                
                 String filter = getInfo(args, "f:", "filter:");
                 
                 List<String> filters = new ArrayList<>();
@@ -233,184 +205,165 @@ public class DiscordListener extends ListenerAdapter
                 Messenger.debug("Block: " + block);
                 Messenger.debug("Filter: " + filter);
                 Messenger.debug("Reverse: " + reverse);
-                
+    
+                List<Integer> actionList = new ArrayList<>();
+    
                 if(action.isEmpty() || action.isBlank())
-                    action = "all";
+                    actionList = null;
+                else
+                {
+                    if(action.charAt(0) == '-')
+                        actionList.add(0);
+                    if(action.charAt(0) == '+')
+                        actionList.add(1);
+                }
+
+                List<String[]> results = coAPI.performLookup(timeToSeconds(time), users, null, blocks, excludeBlocks, actionList, 0, null);
                 
-                try
+                if(file)
                 {
-                    List<String> results = coSQL.lookUpData(users, action, blocks, timeToSeconds(time));
+                    outputFile(results, channel);
                     
-                    if(file)
+                    return;
+                }
+                
+                ArrayList<Page> pages = new ArrayList<>();
+                
+                int rows = 0;
+
+                if(results.size() == 0)
+                {
+                    String msg = setPlaceholders(plugin.getCfg().getMessage(Message.EMBED_NO_RESULTS));
+
+                    embed.setDescription(msg);
+
+                    sendEmbed(channel, embed);
+                    
+                    return;
+                }
+                
+                if(filters.size() == 0 &&
+                        args[args.length - 1].equalsIgnoreCase("#count"))
+                {
+                    String msg = setPlaceholders(plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
+                                  .replace("%count%", String.valueOf(results.size())));
+                    
+                    embed.setDescription(msg);
+                    
+                    sendEmbed(channel, embed);
+                    
+                    return;
+                }
+                
+                int filterMatches = 0;
+                
+                for(int i = reverse ? results.size() - 1 : 0; reverse ?  i >= 0 : i < results.size();)
+                {
+                    String[] result = results.get(i);
+                    
+                    CoreProtectAPI.ParseResult parsed = coAPI.parseResult(result);
+                    
+                    String locationRow = setPlaceholders(cfg.getMessage(Message.COORDINATE_ROW))
+                            .replace("%world%", parsed.worldName())
+                            .replace("%x%", String.valueOf(parsed.getX()))
+                            .replace("%y%", String.valueOf(parsed.getY()))
+                            .replace("%z%", String.valueOf(parsed.getZ()));
+                    
+                    String actionRow = parsed.getPlayer() + " " + parsed.getActionString() + " " + parsed.getType();
+                    
+                    if(filters.size() != 0)
                     {
-                        outputFile(results, channel);
+                        String[] split = actionRow.split(" ");
+
+                        boolean skip = true;
                         
-                        return;
-                    }
-                    
-                    ArrayList<Page> pages = new ArrayList<>();
-                    
-                    int rows = 0;
-    
-                    if(results.size() == 0)
-                    {
-                        String msg = PlaceholderAPI.setPlaceholders(null,
-                                plugin.getCfg().getMessage(Message.EMBED_NO_RESULTS));
-    
-                        embed.setDescription(msg);
-    
-                        sendEmbed(channel, embed);
-                        
-                        return;
-                    }
-                    
-                    if(filters.size() == 0 &&
-                            args[args.length - 1].equalsIgnoreCase("#count"))
-                    {
-                        String msg = PlaceholderAPI.setPlaceholders(null,
-                                plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
-                                      .replace("%count%", String.valueOf(results.size())));
-                        
-                        embed.setDescription(msg);
-                        
-                        sendEmbed(channel, embed);
-                        
-                        return;
-                    }
-                    
-                    int filterMatches = 0;
-                    
-                    for(int i = reverse ? results.size() - 1 : 0; reverse ?  i >= 0 : i < results.size();)
-                    {
-                        String[] values = results.get(i).split(" \\| ");
-        
-                        String date = values[0];
-                        String data = values[1];
-                        
-                        String xyz = data.split("\n")[0];
-                        String value = data.split("\n")[1];
-                        
-                        String[] xyzSplit = xyz.split(" ");
-                        
-                        String x = xyzSplit[0].replace("X:", "");
-                        String y = xyzSplit[1].replace("Y:", "");
-                        String z = xyzSplit[2].replace("Z:", "");
-                        
-                        String xyzRow = setPlaceholders(cfg.getMessage(Message.COORDINATE_ROW))
-                                .replace("%x%", x)
-                                .replace("%y%", y)
-                                .replace("%z%", z);
-                        
-                        Messenger.debug("XYZ: " + xyzRow);
-                        Messenger.debug("Value: " + value);
-                        
-                        data = xyzRow + "\n" + value;
-                        
-                        if(filters.size() != 0)
+                        for(String sp : split)
                         {
-                            String tempFilter = data.split("\n")[1].replace("/", "");
-                            String[] split = tempFilter.split(" ");
-    
-                            boolean skip = true;
-                            
-                            for(String sp : split)
+                            if(filters.contains(sp.trim()))
                             {
-                                if(filters.contains(sp.trim()))
-                                {
-                                    filterMatches++;
-                                    
-                                    skip = false;
-                                }
-                            }
-                            
-                            if(skip)
-                            {
-                                if(reverse)
-                                    i--;
-                                else i++;
-        
-                                continue;
+                                filterMatches++;
+                                
+                                skip = false;
                             }
                         }
-        
-                        embed.addField(date, data, false);
-        
-                        rows++;
-    
-                        if(cfg.showCount())
-                        {
-                            String msg = PlaceholderAPI.setPlaceholders(null,
-                                    plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
-                                            .replace("%count%", String.valueOf(results.size())));
-    
-                            embed.setDescription(msg);
-                        }
-    
-                        if(rows >= this.cfg.getRowsInPage())
-                        {
-                            String footer = setPlaceholders(cfg.getEmbedFooter())
-                                    .replace("%page%", String.valueOf(pages.size() + 1))
-                                    .replace("%message_author_tag%", e.getAuthor().getAsTag())
-                                    .replace("%message_author_name%", e.getMember().getEffectiveName());
-                            
-                            embed.setFooter(footer);
-                            
-                            pages.add(new Page(PageType.EMBED, embed.build()));
-            
-                            embed = new EmbedBuilder()
-                                    .setAuthor(setPlaceholders(cfg.getMessage(Message.EMBED_TITLE)))
-                                    .setColor(Color.decode(cfg.getEmbedColor()));
-            
-                            rows = 0;
-                        }
-    
-                        if(reverse)
-                            i--;
-                        else i++;
-                    }
-    
-                    if(filters.size() != 0 &&
-                            args[args.length - 1].equalsIgnoreCase("#count"))
-                    {
-                        embed.setDescription(String.format("Found %d %s.",
-                                filterMatches, filterMatches == 1 ? "result" : "results"));
                         
-                        embed.clearFields();
-        
-                        sendEmbed(channel, embed);
-        
-                        return;
+                        if(skip)
+                        {
+                            if(reverse)
+                                i--;
+                            else i++;
+    
+                            continue;
+                        }
                     }
-                    
-                    if(filters.size() != 0 && filterMatches == 0)
+    
+                    embed.addField(Utils.getDateFromTimestamp(parsed.getTimestamp()), locationRow + "\n" + actionRow, false);
+    
+                    rows++;
+
+                    if(cfg.showCount())
                     {
-                        embed.setDescription(setPlaceholders(cfg.getMessage(Message.EMBED_NO_RESULTS_FILTER)));
-    
-                        sendEmbed(channel, embed);
-    
-                        return;
+                        String msg = setPlaceholders(plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
+                                        .replace("%count%", String.valueOf(results.size())));
+
+                        embed.setDescription(msg);
                     }
-                    
-                    if(pages.size() == 0)
+
+                    if(rows >= this.cfg.getRowsInPage())
+                    {
+                        String footer = setPlaceholders(cfg.getEmbedFooter())
+                                .replace("%page%", String.valueOf(pages.size() + 1))
+                                .replace("%message_author_tag%", e.getAuthor().getAsTag())
+                                .replace("%message_author_name%", e.getMember().getEffectiveName());
+                        
+                        embed.setFooter(footer);
+                        
                         pages.add(new Page(PageType.EMBED, embed.build()));
-                    
-                    channel.sendMessage((MessageEmbed) pages.get(0).getContent())
-                            .queue(success -> Pages.paginate(success, pages));
+        
+                        embed = new EmbedBuilder()
+                                .setAuthor(setPlaceholders(cfg.getMessage(Message.EMBED_TITLE)))
+                                .setColor(Color.decode(cfg.getEmbedColor()));
+        
+                        rows = 0;
+                    }
+
+                    if(reverse)
+                        i--;
+                    else i++;
                 }
-                catch(SQLException ex)
+
+                if(filters.size() != 0 &&
+                        args[args.length - 1].equalsIgnoreCase("#count"))
                 {
-                    Messenger.debug(ex.getMessage());
+                    embed.setDescription(String.format("Found %d %s.",
+                            filterMatches, filterMatches == 1 ? "result" : "results"));
                     
-                    Messenger.warn("SQL Exception has occurred..");
-                    Messenger.warn("Attempting to reconnect..");
-                    
-                    coSQL.connect();
+                    embed.clearFields();
+    
+                    sendEmbed(channel, embed);
+    
+                    return;
                 }
+                
+                if(filters.size() != 0 && filterMatches == 0)
+                {
+                    embed.setDescription(setPlaceholders(cfg.getMessage(Message.EMBED_NO_RESULTS_FILTER)));
+
+                    sendEmbed(channel, embed);
+
+                    return;
+                }
+                
+                if(pages.size() == 0)
+                    pages.add(new Page(PageType.EMBED, embed.build()));
+                
+                channel.sendMessage((MessageEmbed) pages.get(0).getContent())
+                        .queue(success -> Pages.paginate(success, pages));
             }
         }
     }
     
-    private void outputFile(List<String> results, MessageChannel channel)
+    private void outputFile(List<String[]> results, MessageChannel channel)
     {
         if(results.size() == 0)
         {
@@ -425,9 +378,9 @@ public class DiscordListener extends ListenerAdapter
         channel.sendFile(sb.getBytes(), "results.txt").queue();
     }
     
-    private long timeToSeconds(String time)
+    private int timeToSeconds(String time)
     {
-        long total = 0;
+        int total = 0;
         
         String tempDigit = "";
         
