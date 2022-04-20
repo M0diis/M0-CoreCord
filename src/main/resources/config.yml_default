@@ -63,6 +63,21 @@ messages:
   game:
     config-reloaded: "&bConfiguration has been successfully reloaded."
 
+webhook-loggers:
+  1:
+    url: 'webhook-url-goes-here'
+    actions:
+      - '+block' # Place a block (+block, place)
+      - '-block' # Break a block (-block, break)
+     # - '+item' # Item pickup (+item, pickup, pickupitem)
+     # - '-item' # Item drop (-item, drop, dropitem)
+     # - '-session' # Player join (-session, quit, playerquit)
+     # - '+session' # Player quit (+session, join, playerjoin)
+     # - 'container' # Open a container
+     # - 'chat' # Message send
+     # - 'command' # Command execution
+     # - 'kill' # Monter/animal kill (kill, mobkill)
+
 ## Misc
 # Enable debugging
 # Sends a lot of extra messages to the console
