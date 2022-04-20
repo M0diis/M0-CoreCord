@@ -6,10 +6,12 @@ import com.github.ygimenez.model.PaginatorBuilder;
 import com.github.ygimenez.type.Emote;
 import me.m0dii.corecord.commands.CoreCo;
 import me.m0dii.corecord.listeners.DiscordListener;
+import me.m0dii.corecord.listeners.LoggerListener;
 import me.m0dii.corecord.listeners.PlayerJoin;
 import me.m0dii.corecord.utils.Config;
 import me.m0dii.corecord.utils.Messenger;
 import me.m0dii.corecord.utils.UpdateChecker;
+import me.m0dii.corecord.utils.WebhookLogger;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import org.bstats.bukkit.Metrics;
@@ -87,6 +89,7 @@ public class CoreCord extends JavaPlugin
         this.coSQL = new CoSQL(this);
     
         pm.registerEvents(new PlayerJoin(this), this);
+        pm.registerEvents(new LoggerListener(this), this);
     
         PluginCommand cmd = this.getCommand("corecord");
     
@@ -167,6 +170,11 @@ public class CoreCord extends JavaPlugin
                 
                 Messenger.warn("Failed to close SQL connection..");
             }
+        }
+        
+        for(WebhookLogger logger : cfg.getLoggers().values())
+        {
+            logger.close();
         }
     
         Messenger.info("M0-CoreCord has been disabled.");

@@ -6,13 +6,21 @@ plugins {
 compileJava.options.encoding = 'UTF-8'
 
 group 'me.m0dii'
-version '1.8.0'
+version '2.0.0'
 
 shadowJar {
     relocate 'org.bstats', 'me.m0dii.corecord'
     minimize()
 
     archiveFileName = "M0-CoreCord-${version}.jar"
+}
+
+processResources {
+    eachFile {
+        if (file.name.endsWith(".yml")) {
+            expand version: version
+        }
+    }
 }
 
 repositories {
@@ -62,6 +70,8 @@ dependencies {
     implementation ('net.dv8tion:JDA:4.2.0_222') {
         exclude module: 'opus-java'
     }
+
+    implementation("club.minnced:discord-webhooks:0.8.0")
 
     implementation 'com.github.ygimenez:Pagination-Utils:2.1.8'
 

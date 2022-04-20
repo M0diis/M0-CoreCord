@@ -103,6 +103,52 @@ public class Config
         
         for(String r : allowedRoles)
             Messenger.debug(r);
+        
+        loadWebhooks();
+    }
+    
+    private Map<String, WebhookLogger> webhooks = new HashMap<>();
+    
+    public Map<String, WebhookLogger> getLoggers()
+    {
+        return webhooks;
+    }
+    
+    public WebhookLogger getWebhook(String... actions)
+    {
+        for(WebhookLogger l : webhooks.values())
+        {
+            for(String a : actions)
+            {
+                if(l.hasAction(a))
+                    return l;
+            }
+        }
+        
+        return null;
+    }
+    
+    private void loadWebhooks()
+    {
+        this.webhooks = new HashMap<>();
+        
+        for(String key : this.cfg.getConfigurationSection("webhook-loggers").getKeys(false))
+        {
+            var section = this.cfg.getConfigurationSection("webhook-loggers." + key);
+    
+            if(section == null)
+                continue;
+            
+            String url = section.getString("url");
+    
+            String channelID = section.getString("channel-id");
+            
+            var webhook = new WebhookLogger(url, channelID);
+            
+            webhook.addActions(section.getStringList("actions"));
+            
+            webhooks.put(channelID, webhook);
+        }
     }
     
     private String getStr(String path)
