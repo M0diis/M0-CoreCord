@@ -9,95 +9,83 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WebhookLogger
-{
+public class WebhookLogger {
     private WebhookClient client;
-    
+
+    private final List<String> actions;
+
     private String channelID;
-    
-    private List<String> actions;
-    
-    public WebhookLogger(String url, String channelID)
-    {
+
+    public WebhookLogger(String url, String channelID) {
         this.channelID = channelID;
-        
+
         this.actions = new ArrayList<>();
-        
+
         setUp(url);
     }
-    
-    private void setUp(String url)
-    {
+
+    private void setUp(String url) {
         WebhookClientBuilder builder = new WebhookClientBuilder(url);
-        
+
         setThreadFactory(builder);
-        
+
         client = builder.build();
     }
-    
-    public void send(String username, String msg)
-    {
+
+    public void send(String username, String msg) {
         client.send(getMsgBuilder(username, msg).build());
     }
-    
-    public void close()
-    {
+
+    public void close() {
         client.close();
     }
-    
-    public boolean hasAction(String action)
-    {
+
+    public boolean hasAction(String action) {
         return actions.contains(action);
     }
-    
-    public void addActions(List<String> actions)
-    {
+
+    public void addActions(List<String> actions) {
         this.actions.addAll(actions);
     }
-    
-    public void addAction(String action)
-    {
+
+    public void addAction(String action) {
         actions.add(action);
     }
-    
-    public WebhookMessageBuilder getMsgBuilder(String username, @Nullable String msg)
-    {
+
+    public WebhookMessageBuilder getMsgBuilder(String username, @Nullable String msg) {
         WebhookMessageBuilder builder =
                 new WebhookMessageBuilder().setAvatarUrl("https://minotar.net/avatar/" + username)
                         .setUsername(username);
-        
-        if(msg != null) builder.setContent(msg.trim());
-        
+
+        if (msg != null) builder.setContent(msg.trim());
+
         return builder;
     }
-    
-    public WebhookMessageBuilder getMsgBuilder(String username, WebhookEmbedBuilder embed)
-    {
+
+    public WebhookMessageBuilder getMsgBuilder(String username, WebhookEmbedBuilder embed) {
         WebhookMessageBuilder builder =
                 new WebhookMessageBuilder().setAvatarUrl("https://minotar.net/avatar/" + username)
                         .setUsername(username);
-        
-        if(embed != null) builder.addEmbeds(embed.build());
-        
+
+        if (embed != null) builder.addEmbeds(embed.build());
+
         return builder;
     }
-    
-    
-    public void setThreadFactory(WebhookClientBuilder builder)
-    {
+
+
+    public void setThreadFactory(WebhookClientBuilder builder) {
         builder.setThreadFactory((job) -> {
             Thread thread = new Thread(job);
             thread.setDaemon(true);
             return thread;
         }).setWait(true);
     }
-    
-    public WebhookClient getClient(String webhookUrl)
-    {
+
+    public WebhookClient getClient(String webhookUrl) {
         WebhookClientBuilder builder = new WebhookClientBuilder(webhookUrl);
-        
+
         setThreadFactory(builder);
-        
+
         return builder.build();
     }
 }

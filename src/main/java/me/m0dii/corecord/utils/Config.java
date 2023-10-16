@@ -1,85 +1,82 @@
 package me.m0dii.corecord.utils;
 
 import me.m0dii.corecord.CoreCord;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Config
-{
+public class Config {
     private String cfgVersion;
     private boolean debugging = false;
-    
+
     private boolean useMySQL;
     private String host, database, username, password; // tablePrefix;
     private int port;
-    
+
     private String embedLeft, embedRight, embedClose, embedColor, embedTitle, embedFooter;
     private boolean deleteOnClose;
     private int rowsInPage;
-    
+
     private boolean showCount;
-    
+
     private String dateFormat;
-    
+
     private String botToken, botPrefix;
-    
+
     private boolean channelWhitelist;
-    
+
     private List<String> allowedRoles, allowedChannels;
-    
+
     private boolean notifyUpdate;
-    
+
     FileConfiguration cfg;
-    
+
     private Map<Message, String> messages;
-    
-    public String getMessage(Message message)
-    {
+
+    public String getMessage(Message message) {
         return this.messages.getOrDefault(message, "");
     }
-    
-    public void reload(CoreCord plugin)
-    {
+
+    public void reload(CoreCord plugin) {
         plugin.reloadConfig();
-        
+
         this.load(plugin);
     }
-    
-    public void load(CoreCord plugin)
-    {
+
+    public void load(CoreCord plugin) {
         this.cfg = plugin.getConfig();
         this.messages = new HashMap<>();
-        
+
         this.useMySQL = cfg.getBoolean("use-mysql", true);
-        
+
         this.host = getStr("mysql-host", "localhost");
         //this.tablePrefix = getStr("table-prefix");
         this.database = getStr("mysql-database", "database");
         this.username = getStr("mysql-username", "root");
         this.password = getStr("mysql-password");
         this.port = this.cfg.getInt("mysql-port", 3306);
-        
+
         this.botToken = getStr("discord-bot-token");
         this.botPrefix = getStr("command-prefix", "co!");
-        
+
         this.allowedRoles = cfg.getStringList("allowed-roles");
-        
+
         this.debugging = cfg.getBoolean("debug");
         this.deleteOnClose = cfg.getBoolean("delete-on-close");
         this.rowsInPage = cfg.getInt("rows-in-page", 5);
-        
+
         this.showCount = cfg.getBoolean("always-show-count", true);
-        
+
         this.embedLeft = getStr("embed-page-left");
         this.embedRight = getStr("embed-page-right");
         this.embedClose = getStr("embed-close");
         this.embedColor = getStr("embed-color");
         this.embedTitle = getStr("embed-title");
         this.embedFooter = getStr("embed-footer");
-        
+
         messages.put(Message.EMBED_SPECIFY_TIME, getStr("messages.discord.specify-time"));
         messages.put(Message.EMBED_CONFIG_RELOAD, getStr("messages.discord.config-reloaded"));
         messages.put(Message.EMBED_RESULT_COUNT, getStr("messages.discord.result-count"));
@@ -87,227 +84,202 @@ public class Config
         messages.put(Message.EMBED_NO_RESULTS, getStr("messages.discord.no-results"));
         messages.put(Message.GAME_CONFIG_RELOAD, getStr("messages.game.config-reloaded"));
         messages.put(Message.COORDINATE_ROW, getStr("messages.discord.coordinates"));
-        
+
         this.dateFormat = getStr("date-format");
-        
+
         this.cfgVersion = getStr("cfg-version");
         this.notifyUpdate = cfg.getBoolean("notify-update", true);
-        
+
         this.channelWhitelist = cfg.getBoolean("channel-whitelist", false);
         this.allowedChannels = cfg.getStringList("channels-ids");
-        
+
         Utils.setDateFormat(this.dateFormat);
-        
+
         Messenger.debug("Config has been loaded successfully.");
         Messenger.debug("Allowed role IDs to use the commands:");
-        
-        for(String r : allowedRoles)
+
+        for (String r : allowedRoles) {
             Messenger.debug(r);
-        
+        }
+
         loadWebhooks();
     }
-    
+
     private Map<String, WebhookLogger> webhooks = new HashMap<>();
-    
-    public Map<String, WebhookLogger> getLoggers()
-    {
+
+    public Map<String, WebhookLogger> getLoggers() {
         return webhooks;
     }
-    
-    public WebhookLogger getWebhook(String... actions)
-    {
-        for(WebhookLogger l : webhooks.values())
-        {
-            for(String a : actions)
-            {
-                if(l.hasAction(a))
+
+    public WebhookLogger getWebhook(String... actions) {
+        for (WebhookLogger l : webhooks.values()) {
+            for (String a : actions) {
+                if (l.hasAction(a))
                     return l;
             }
         }
-        
+
         return null;
     }
-    
-    private void loadWebhooks()
-    {
+
+    private void loadWebhooks() {
         this.webhooks = new HashMap<>();
-        
-        for(String key : this.cfg.getConfigurationSection("webhook-loggers").getKeys(false))
-        {
+
+        ConfigurationSection loggerSection = this.cfg.getConfigurationSection("webhook-loggers");
+
+        if(loggerSection == null) {
+            Messenger.warn("No webhook loggers found in config.");
+            return;
+        }
+
+        for (String key : loggerSection.getKeys(false)) {
             var section = this.cfg.getConfigurationSection("webhook-loggers." + key);
-    
-            if(section == null)
+
+            if (section == null)
                 continue;
-            
+
             String url = section.getString("url");
-    
+
             String channelID = section.getString("channel-id");
-            
+
             var webhook = new WebhookLogger(url, channelID);
-            
+
             webhook.addActions(section.getStringList("actions"));
-            
+
             webhooks.put(channelID, webhook);
         }
     }
-    
-    private String getStr(String path)
-    {
+
+    private String getStr(String path) {
         return this.cfg.getString(path, "");
     }
-    
-    private String getStr(String path, String def)
-    {
+
+    private String getStr(String path, String def) {
         return this.cfg.getString(path, def);
     }
-    
-    public String getHost()
-    {
+
+    public String getHost() {
         Messenger.debug("Host has been set to " + this.host);
-        
+
         return this.host;
     }
-    
-    public String getDatabase()
-    {
+
+    public String getDatabase() {
         Messenger.debug("Database has been set to " + this.database);
-        
+
         return this.database;
     }
-    
-    public String getUsername()
-    {
+
+    public String getUsername() {
         Messenger.debug("Username has been set to " + this.username);
-        
+
         return this.username;
     }
-    
-    public String getPassword()
-    {
+
+    public String getPassword() {
         return this.password;
     }
-    
-    public int getPort()
-    {
+
+    public int getPort() {
         Messenger.debug("Port has been set to " + this.database);
-        
+
         return this.port;
     }
-    
-    public String getBotToken()
-    {
+
+    public String getBotToken() {
         return this.botToken;
     }
-    
-    public String getBotPrefix()
-    {
+
+    public String getBotPrefix() {
         return this.botPrefix;
     }
-    
-    public List<String> getAllowedRoles()
-    {
+
+    public List<String> getAllowedRoles() {
         return this.allowedRoles;
     }
-    
-    public boolean isDebugEnabled()
-    {
+
+    public boolean isDebugEnabled() {
         return this.debugging;
     }
-    
-    public String getEmbedLeft()
-    {
-        if(this.embedLeft.isEmpty())
+
+    public String getEmbedLeft() {
+        if (this.embedLeft.isEmpty())
             return "⬅️";
-        
+
         return this.embedLeft;
     }
-    
-    public String getEmbedRight()
-    {
-        if(this.embedLeft.isEmpty())
+
+    public String getEmbedRight() {
+        if (this.embedLeft.isEmpty())
             return "➡️️";
-        
+
         return this.embedRight;
     }
-    
-    public String getEmbedColor()
-    {
-        if(this.embedLeft.isEmpty())
+
+    public String getEmbedColor() {
+        if (this.embedLeft.isEmpty())
             return "#00FFFF";
-        
+
         return this.embedColor;
     }
-    
-    public String getEmbedTitle()
-    {
-        if(this.embedTitle.isEmpty())
+
+    public String getEmbedTitle() {
+        if (this.embedTitle.isEmpty())
             return "CoreCord";
-        
+
         return this.embedTitle;
     }
-    
-    public boolean deleteOnClose()
-    {
+
+    public boolean deleteOnClose() {
         return this.deleteOnClose;
     }
-    
-    public String getEmbedClose()
-    {
+
+    public String getEmbedClose() {
         return this.embedClose;
     }
-    
-    public int getRowsInPage()
-    {
-        if(this.rowsInPage > 25)
-        {
+
+    public int getRowsInPage() {
+        if (this.rowsInPage > 25) {
             rowsInPage = 25;
-            
+
             Messenger.debug("Too many rows in one page. Setting to 25.");
         }
-        
+
         return this.rowsInPage;
     }
-    
-    public String getDateFormat()
-    {
+
+    public String getDateFormat() {
         return this.dateFormat;
     }
-    
-    public boolean useMySQL()
-    {
+
+    public boolean useMySQL() {
         return this.useMySQL;
     }
-    
-    public boolean showCount()
-    {
+
+    public boolean showCount() {
         return this.showCount;
     }
-    
-    public boolean notifyUpdate()
-    {
+
+    public boolean notifyUpdate() {
         return this.notifyUpdate;
     }
-    
-    public String getCfgVersion()
-    {
-        if(cfgVersion == null || cfgVersion.trim().isEmpty())
+
+    public String getCfgVersion() {
+        if (cfgVersion == null || cfgVersion.trim().isEmpty())
             return "1.0";
-        
+
         return cfgVersion;
     }
-    
-    public List<String> getAllowedChannels()
-    {
+
+    public List<String> getAllowedChannels() {
         return this.allowedChannels;
     }
-    
-    public boolean channelWhitelist()
-    {
+
+    public boolean channelWhitelist() {
         return this.channelWhitelist;
     }
-    
-    public String getEmbedFooter()
-    {
+
+    public String getEmbedFooter() {
         return embedFooter;
     }
 }

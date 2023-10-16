@@ -76,7 +76,7 @@ webhook-loggers:
      # - 'container' # Open a container
      # - 'chat' # Message send
      # - 'command' # Command execution
-     # - 'kill' # Monter/animal kill (kill, mobkill)
+     # - 'kill' # Monster/animal kill (kill, mobkill)
 
 ## Misc
 # Enable debugging

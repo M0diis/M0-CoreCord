@@ -19,185 +19,174 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Arrays;
 import java.util.List;
 
-public class LoggerListener implements Listener
-{
+public class LoggerListener implements Listener {
     private final Config cfg;
-    
-    public LoggerListener(CoreCord plugin)
-    {
+
+    public LoggerListener(CoreCord plugin) {
         this.cfg = plugin.getCfg();
     }
-    
+
     @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event)
-    {
+    public void onBlockPlace(BlockPlaceEvent event) {
         WebhookLogger hook = cfg.getWebhook("+block", "place");
-        
-        if(hook == null)
+
+        if (hook == null) {
             return;
-    
+        }
+
         String name = event.getPlayer().getName();
         Block block = event.getBlock();
         Location loc = block.getLocation();
-        
+
         hook.send(name, "Placed a block at " + "X: " + loc.getBlockX() + " Y: " + loc.getBlockY() + " Z: " + loc.getBlockZ()
-            + " (" + block.getType().name() + ")");
+                + " (" + block.getType().name() + ")");
     }
-    
+
     @EventHandler
-    public void onChat(AsyncPlayerChatEvent event)
-    {
+    public void onChat(final AsyncPlayerChatEvent event) {
         WebhookLogger hook = cfg.getWebhook("chat");
-        
-        if(hook == null)
+
+        if (hook == null)
             return;
-    
+
         String name = event.getPlayer().getName();
         String message = event.getMessage();
-        
+
         hook.send(name, "Sent a message: " + message);
     }
-    
+
     @EventHandler
-    public void onCommand(PlayerCommandPreprocessEvent event)
-    {
+    public void onCommand(final PlayerCommandPreprocessEvent event) {
         WebhookLogger hook = cfg.getWebhook("command");
-        
-        if(hook == null)
+
+        if (hook == null)
             return;
-    
+
         String name = event.getPlayer().getName();
         String message = event.getMessage();
-        
+
         hook.send(name, "Executed a command: " + message);
     }
-    
+
     private static final List<Material> containers = Arrays.asList(Material.CHEST, Material.DISPENSER, Material.DROPPER, Material.HOPPER, Material.FURNACE, Material.BREWING_STAND, Material.CAULDRON, Material.ENDER_CHEST);
-    
+
     @EventHandler
-    public void onItemDrop(PlayerDropItemEvent event)
-    {
+    public void onItemDrop(final PlayerDropItemEvent event) {
         WebhookLogger hook = cfg.getWebhook("-item", "drop", "dropitem");
-        
-        if(hook == null)
+
+        if (hook == null)
             return;
-    
+
         String name = event.getPlayer().getName();
         ItemStack itemStack = event.getItemDrop().getItemStack();
 
         Location loc = event.getPlayer().getLocation();
-        
+
         hook.send(name, "Dropped an item at X:" + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ()
-            + " (" + itemStack.getType() + " x" + itemStack.getAmount() + ")");
+                + " (" + itemStack.getType() + " x" + itemStack.getAmount() + ")");
     }
-    
+
     @EventHandler(ignoreCancelled = true)
-    public void onItemPickup(PlayerAttemptPickupItemEvent event)
-    {
+    public void onItemPickup(final PlayerAttemptPickupItemEvent event) {
         WebhookLogger hook = cfg.getWebhook("+item", "pickup", "pickupitem");
-        
-        if(hook == null)
+
+        if (hook == null)
             return;
-    
+
         String name = event.getPlayer().getName();
         ItemStack itemStack = event.getItem().getItemStack();
 
         Location loc = event.getPlayer().getLocation();
-        
+
         hook.send(name, "Picked up an item at X:" + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ()
-            + " (" + itemStack.getType() + " x" + itemStack.getAmount() + ")");
+                + " (" + itemStack.getType() + " x" + itemStack.getAmount() + ")");
     }
-    
+
     @EventHandler(ignoreCancelled = true)
-    public void onContainerOpen(PlayerInteractEvent event)
-    {
+    public void onContainerOpen(final PlayerInteractEvent event) {
         WebhookLogger hook = cfg.getWebhook("container");
-        
-        if(hook == null)
+
+        if (hook == null)
             return;
-        
-        if(event.getAction() != Action.RIGHT_CLICK_BLOCK)
+
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
             return;
-    
+
         String name = event.getPlayer().getName();
-    
+
         Block clicked = event.getClickedBlock();
-        
-        if(clicked == null)
+
+        if (clicked == null)
             return;
-        
-        if(!containers.contains(clicked.getType()))
+
+        if (!containers.contains(clicked.getType()))
             return;
-        
+
         Location loc = clicked.getLocation();
-        
+
         hook.send(name, "Opened a container at X:" + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ() + ". (" + clicked.getType().name() + ")");
     }
-    
+
     @EventHandler
-    public void onMobKill(EntityDeathEvent event)
-    {
+    public void onMobKill(final EntityDeathEvent event) {
         WebhookLogger hook = cfg.getWebhook("kill", "mobkill");
-        
-        if(hook == null)
+
+        if (hook == null)
             return;
-    
+
         Player killer = event.getEntity().getKiller();
-        
-        if(killer == null)
+
+        if (killer == null)
             return;
-        
+
         String name = killer.getName();
         String mob = event.getEntity().getType().name();
-        
+
         Location loc = event.getEntity().getLocation();
-        
+
         hook.send(name, "Killed a " + mob + " at X:" + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ());
     }
-    
+
     @EventHandler
-    public void onBlockBreak(BlockBreakEvent event)
-    {
+    public void onBlockBreak(final BlockBreakEvent event) {
         WebhookLogger hook = cfg.getWebhook("-block", "break");
-        
-        if(hook == null)
+
+        if (hook == null)
             return;
-    
+
         String name = event.getPlayer().getName();
         Block block = event.getBlock();
         Location loc = block.getLocation();
-        
+
         hook.send(name, "Broke a block at " + "X:" + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ()
-            + " (" + block.getType().name() + ")");
+                + " (" + block.getType().name() + ")");
     }
-    
+
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event)
-    {
+    public void onPlayerJoin(final PlayerJoinEvent event) {
         WebhookLogger hook = cfg.getWebhook("join", "+session", "playerjoin");
-        
-        if(hook == null)
+
+        if (hook == null)
             return;
-    
+
         String name = event.getPlayer().getName();
-    
+
         Location loc = event.getPlayer().getLocation();
-        
+
         hook.send(name, "Joined the server. (X:" + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ() + ")");
     }
-    
+
     @EventHandler
-    public void onPlayerLeave(PlayerQuitEvent event)
-    {
+    public void onPlayerLeave(final PlayerQuitEvent event) {
         WebhookLogger hook = cfg.getWebhook("quit", "-session", "playerquit");
-        
-        if(hook == null)
+
+        if (hook == null)
             return;
-    
+
         String name = event.getPlayer().getName();
         Location loc = event.getPlayer().getLocation();
-        
+
         hook.send(name, "Left the server. (X:" + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ() + ")");
     }
-    
+
 }

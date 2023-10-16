@@ -1,7 +1,6 @@
 package me.m0dii.corecord.utils;
 
-public enum Message
-{
+public enum Message {
     EMBED_RESULT_COUNT,
     EMBED_NO_RESULTS,
     EMBED_NO_RESULTS_FILTER,

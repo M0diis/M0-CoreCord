@@ -1,7 +1,7 @@
 package me.m0dii.corecord.listeners;
 
-import me.m0dii.corecord.utils.Config;
 import me.m0dii.corecord.CoreCord;
+import me.m0dii.corecord.utils.Config;
 import me.m0dii.corecord.utils.Messenger;
 import me.m0dii.corecord.utils.UpdateChecker;
 import org.bukkit.Bukkit;
@@ -10,40 +10,34 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-public class PlayerJoin implements Listener
-{
+public class PlayerJoin implements Listener {
     private final CoreCord plugin;
     private final Config cfg;
-    
-    public PlayerJoin(CoreCord plugin)
-    {
+
+    public PlayerJoin(CoreCord plugin) {
         this.cfg = plugin.getCfg();
         this.plugin = plugin;
     }
-    
+
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent e)
-    {
+    public void onPlayerJoin(PlayerJoinEvent e) {
         Bukkit.getScheduler().runTaskLaterAsynchronously(this.plugin, () ->
         {
             Player p = e.getPlayer();
-            
-            if(cfg.notifyUpdate())
-            {
-                if(p.hasPermission("corecord.update.notify"))
-                {
+
+            if (cfg.notifyUpdate()) {
+                if (p.hasPermission("corecord.update.notify")) {
                     new UpdateChecker(this.plugin, 91863).getVersion(ver ->
                     {
                         String curr = this.plugin.getDescription().getVersion();
-                        
+
                         if (!curr.equals(ver.replace("v", ""))
-                            && p.isOnline())
-                        {
+                                && p.isOnline()) {
                             Messenger.sendf(p,
-                            "&eYou are running an outdated version of M0-CoreCord." +
-                                    "\n&eLatest version: &6" + ver + ", &eyou are using: &6" + curr +
-                                    "\n&eYou can download the latest version on Spigot:" +
-                                    "\n&e" + plugin.getSpigotLink());
+                                    "&eYou are running an outdated version of M0-CoreCord." +
+                                            "\n&eLatest version: &6" + ver + ", &eyou are using: &6" + curr +
+                                            "\n&eYou can download the latest version on Spigot:" +
+                                            "\n&e" + plugin.getSpigotLink());
                         }
                     });
                 }

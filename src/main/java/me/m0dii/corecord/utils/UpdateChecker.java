@@ -9,33 +9,27 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Scanner;
 
-public class UpdateChecker
-{
+public class UpdateChecker {
     private final CoreCord plugin;
     private final int resourceId;
-    
-    public UpdateChecker(CoreCord plugin, int resourceId)
-    {
+
+    public UpdateChecker(CoreCord plugin, int resourceId) {
         this.plugin = plugin;
         this.resourceId = resourceId;
     }
-    
-    public void getVersion(final Consumer<String> consumer)
-    {
+
+    public void getVersion(final Consumer<String> consumer) {
         Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () ->
         {
             try (InputStream inputStream = new URL("https://api.spigotmc.org/legacy/update.php?resource=" + this.resourceId)
                     .openStream();
-                 
-            Scanner scanner = new Scanner(inputStream))
-            {
+
+                 Scanner scanner = new Scanner(inputStream)) {
                 if (scanner.hasNext())
                     consumer.accept(scanner.next());
-            }
-            catch (IOException ex)
-            {
+            } catch (IOException ex) {
                 Messenger.warn("Failed to check for updates.");
-                
+
                 Messenger.debug(ex.getMessage());
             }
         });
