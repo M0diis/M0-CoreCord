@@ -18,6 +18,7 @@ tasks.shadowJar {
 }
 
 tasks.processResources {
+    inputs.property("version", version)
     filesMatching("**/*.yml") {
         expand("version" to version)
     }
