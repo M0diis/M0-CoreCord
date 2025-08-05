@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class Placeholders extends PlaceholderExpansion {
 
-    final CoreCord plugin;
+    private final CoreCord plugin;
 
     public Placeholders(CoreCord plugin) {
         this.plugin = plugin;

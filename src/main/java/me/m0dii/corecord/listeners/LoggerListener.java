@@ -15,6 +15,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,12 +23,12 @@ import java.util.List;
 public class LoggerListener implements Listener {
     private final Config cfg;
 
-    public LoggerListener(CoreCord plugin) {
+    public LoggerListener(@NotNull CoreCord plugin) {
         this.cfg = plugin.getCfg();
     }
 
     @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event) {
+    public void onBlockPlace(final BlockPlaceEvent event) {
         WebhookLogger hook = cfg.getWebhook("+block", "place");
 
         if (hook == null) {
@@ -46,8 +47,9 @@ public class LoggerListener implements Listener {
     public void onChat(final AsyncPlayerChatEvent event) {
         WebhookLogger hook = cfg.getWebhook("chat");
 
-        if (hook == null)
+        if (hook == null) {
             return;
+        }
 
         String name = event.getPlayer().getName();
         String message = event.getMessage();
@@ -59,8 +61,9 @@ public class LoggerListener implements Listener {
     public void onCommand(final PlayerCommandPreprocessEvent event) {
         WebhookLogger hook = cfg.getWebhook("command");
 
-        if (hook == null)
+        if (hook == null) {
             return;
+        }
 
         String name = event.getPlayer().getName();
         String message = event.getMessage();
@@ -74,13 +77,14 @@ public class LoggerListener implements Listener {
     public void onItemDrop(final PlayerDropItemEvent event) {
         WebhookLogger hook = cfg.getWebhook("-item", "drop", "dropitem");
 
-        if (hook == null)
+        if (hook == null) {
             return;
+        }
 
         String name = event.getPlayer().getName();
         ItemStack itemStack = event.getItemDrop().getItemStack();
 
-        Location loc = event.getPlayer().getLocation();
+        Location loc = event.getItemDrop().getLocation();
 
         hook.send(name, "Dropped an item at X:" + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ()
                 + " (" + itemStack.getType() + " x" + itemStack.getAmount() + ")");
@@ -90,13 +94,14 @@ public class LoggerListener implements Listener {
     public void onItemPickup(final PlayerAttemptPickupItemEvent event) {
         WebhookLogger hook = cfg.getWebhook("+item", "pickup", "pickupitem");
 
-        if (hook == null)
+        if (hook == null) {
             return;
+        }
 
         String name = event.getPlayer().getName();
         ItemStack itemStack = event.getItem().getItemStack();
 
-        Location loc = event.getPlayer().getLocation();
+        Location loc = event.getItem().getLocation();
 
         hook.send(name, "Picked up an item at X:" + loc.getBlockX() + " Y:" + loc.getBlockY() + " Z:" + loc.getBlockZ()
                 + " (" + itemStack.getType() + " x" + itemStack.getAmount() + ")");
@@ -106,11 +111,13 @@ public class LoggerListener implements Listener {
     public void onContainerOpen(final PlayerInteractEvent event) {
         WebhookLogger hook = cfg.getWebhook("container");
 
-        if (hook == null)
+        if (hook == null) {
             return;
+        }
 
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
+        }
 
         String name = event.getPlayer().getName();
 
@@ -131,13 +138,15 @@ public class LoggerListener implements Listener {
     public void onMobKill(final EntityDeathEvent event) {
         WebhookLogger hook = cfg.getWebhook("kill", "mobkill");
 
-        if (hook == null)
+        if (hook == null) {
             return;
+        }
 
         Player killer = event.getEntity().getKiller();
 
-        if (killer == null)
+        if (killer == null) {
             return;
+        }
 
         String name = killer.getName();
         String mob = event.getEntity().getType().name();
@@ -151,8 +160,9 @@ public class LoggerListener implements Listener {
     public void onBlockBreak(final BlockBreakEvent event) {
         WebhookLogger hook = cfg.getWebhook("-block", "break");
 
-        if (hook == null)
+        if (hook == null) {
             return;
+        }
 
         String name = event.getPlayer().getName();
         Block block = event.getBlock();
@@ -166,8 +176,9 @@ public class LoggerListener implements Listener {
     public void onPlayerJoin(final PlayerJoinEvent event) {
         WebhookLogger hook = cfg.getWebhook("join", "+session", "playerjoin");
 
-        if (hook == null)
+        if (hook == null) {
             return;
+        }
 
         String name = event.getPlayer().getName();
 
@@ -180,8 +191,9 @@ public class LoggerListener implements Listener {
     public void onPlayerLeave(final PlayerQuitEvent event) {
         WebhookLogger hook = cfg.getWebhook("quit", "-session", "playerquit");
 
-        if (hook == null)
+        if (hook == null) {
             return;
+        }
 
         String name = event.getPlayer().getName();
         Location loc = event.getPlayer().getLocation();

@@ -4,6 +4,7 @@ import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.WebhookClientBuilder;
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -14,11 +15,10 @@ public class WebhookLogger {
 
     private final List<String> actions;
 
-    private String channelID;
+    private final String channelID;
 
-    public WebhookLogger(String url, String channelID) {
+    public WebhookLogger(@NotNull String url, @Nullable String channelID) {
         this.channelID = channelID;
-
         this.actions = new ArrayList<>();
 
         setUp(url);
@@ -48,10 +48,6 @@ public class WebhookLogger {
         this.actions.addAll(actions);
     }
 
-    public void addAction(String action) {
-        actions.add(action);
-    }
-
     public WebhookMessageBuilder getMsgBuilder(String username, @Nullable String msg) {
         WebhookMessageBuilder builder =
                 new WebhookMessageBuilder().setAvatarUrl("https://minotar.net/avatar/" + username)
@@ -74,7 +70,7 @@ public class WebhookLogger {
 
 
     public void setThreadFactory(WebhookClientBuilder builder) {
-        builder.setThreadFactory((job) -> {
+        builder.setThreadFactory(job -> {
             Thread thread = new Thread(job);
             thread.setDaemon(true);
             return thread;

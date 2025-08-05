@@ -38,7 +38,7 @@ public class CoSQL {
     }
 
     public void setUpConnection() {
-        this.useMySQL = cfg.useMySQL();
+        this.useMySQL = cfg.isUseMySQL();
 
         this.host = cfg.getHost();
         this.database = cfg.getDatabase();
@@ -167,22 +167,26 @@ public class CoSQL {
 
         int actionType = -1;
 
-        if (action == null)
+        if (action == null) {
             action = "all";
+        }
 
-        if (action.length() > 0) {
-            if (action.charAt(0) == '-')
+        if (!action.isEmpty()) {
+            if (action.charAt(0) == '-') {
                 actionType = 0;
-            if (action.charAt(0) == '+')
+            }
+            if (action.charAt(0) == '+') {
                 actionType = 1;
+            }
         }
 
         Messenger.debug("Looking up for action type: " + actionType);
 
         List<String> userIDs = getIDSbyNames(names);
 
-        if (userIDs.size() == 0)
+        if (userIDs.isEmpty()) {
             return results;
+        }
 
         String in = userIDs.stream().map(str -> "'" + str + "'").collect(Collectors.joining(","));
 

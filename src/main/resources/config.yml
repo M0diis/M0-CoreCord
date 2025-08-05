@@ -89,6 +89,15 @@ webhook-loggers:
      # - 'command' # Command execution
      # - 'kill' # Monster/animal kill (kill, mobkill)
 
+# If any of the result strings contain any of the following
+# words, the result will be excluded from the embed.
+result-excludes:
+  - '/login'
+  - '/register'
+  - '/cp'
+  - '/changepassword'
+  - '/l'
+  - '/reg'
 ## Misc
 # Enable debugging
 # Sends a lot of extra messages to the console

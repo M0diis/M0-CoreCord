@@ -1,8 +1,8 @@
 package me.m0dii.corecord.listeners;
 
 import com.github.ygimenez.method.Pages;
+import com.github.ygimenez.model.InteractPage;
 import com.github.ygimenez.model.Page;
-import com.github.ygimenez.type.PageType;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.m0dii.corecord.CoSQL;
 import me.m0dii.corecord.CoreCord;
@@ -13,16 +13,20 @@ import me.m0dii.corecord.utils.Utils;
 import net.coreprotect.CoreProtect;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.utils.FileUpload;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DiscordListener extends ListenerAdapter {
@@ -32,7 +36,7 @@ public class DiscordListener extends ListenerAdapter {
     private final CoreCord plugin;
     private final Config cfg;
 
-    public DiscordListener(CoreCord plugin) {
+    public DiscordListener(@NotNull CoreCord plugin) {
         this.plugin = plugin;
         this.cfg = plugin.getCfg();
         this.coSQL = plugin.getCoSQL();
@@ -59,9 +63,11 @@ public class DiscordListener extends ListenerAdapter {
         Member m = e.getMember();
         MessageChannel channel = e.getChannel();
 
-        if (cfg.channelWhitelist())
-            if (!cfg.getAllowedChannels().contains(channel.getId()))
+        if (cfg.isChannelWhitelist()) {
+            if (!cfg.getAllowedChannels().contains(channel.getId())) {
                 return;
+            }
+        }
 
         EmbedBuilder embed = new EmbedBuilder()
                 .setAuthor(PlaceholderAPI.setPlaceholders(null, plugin.getCfg().getEmbedTitle()))
@@ -102,7 +108,7 @@ public class DiscordListener extends ListenerAdapter {
             return;
         }
 
-        if (alias(cmd, "help, commands") && allowed) {
+        if (cmd.isBlank() || alias(cmd, "help, commands") && allowed) {
             String pr = cfg.getBotPrefix();
 
             embed.setDescription("\nBOT Prefix: **" + pr + "**")
@@ -128,8 +134,8 @@ public class DiscordListener extends ListenerAdapter {
                 return;
             }
 
-            embed.addField("CoreProtect", co.getDescription().getVersion(), false)
-                    .addField("CoreCord", plugin.getDescription().getVersion(), false)
+            embed.addField("CoreProtect", co.getPluginMeta().getVersion(), false)
+                    .addField("CoreCord", plugin.getPluginMeta().getVersion(), false)
                     .addField("Server", plugin.getServer().getVersion(), false)
                     .addField("OS", System.getProperty("os.name"), false)
                     .addField("Bukkit", plugin.getServer().getBukkitVersion(), false);
@@ -176,7 +182,7 @@ public class DiscordListener extends ListenerAdapter {
                 String time = getInfo(args, "t:", "time:")
                         .replace(",", "");
 
-                if (time.length() == 0 || time.trim().isEmpty()) {
+                if (time.isEmpty() || time.trim().isEmpty()) {
                     embed.setDescription(cfg.getMessage(Message.EMBED_SPECIFY_TIME));
 
                     sendEmbed(channel, embed);
@@ -185,6 +191,10 @@ public class DiscordListener extends ListenerAdapter {
                 }
 
                 String user = clearSQL(getInfo(args, "u:", "user:"));
+
+                if (user.isBlank()) {
+                    user = clearSQL(args[1]);
+                }
 
                 String[] users = user.split(",");
 
@@ -198,18 +208,53 @@ public class DiscordListener extends ListenerAdapter {
 
                 String filter = getInfo(args, "f:", "filter:");
 
+                if (filter.isBlank()) {
+                    filter = getInfo(args, "include:", "contains:");
+                }
+
                 List<String> filters = new ArrayList<>();
 
-                if (filter.trim().length() != 0 && !filter.isEmpty())
+                if (!filter.trim().isEmpty() && !filter.isEmpty()) {
                     filters = Arrays.asList(filter.trim().split(","));
+                }
 
-                boolean reverse = Arrays.stream(args).anyMatch(arg ->
+                boolean reverse = Arrays.stream(args).noneMatch(arg ->
                         arg.equalsIgnoreCase("-r")
                                 || arg.equalsIgnoreCase("-reverse"));
 
                 boolean file = Arrays.stream(args).anyMatch(arg ->
                         arg.equalsIgnoreCase("-f")
                                 || arg.equalsIgnoreCase("-file"));
+
+                boolean hasCustomRows = Arrays.stream(args).anyMatch(arg ->
+                        arg.startsWith("-r=")
+                                || arg.startsWith("-rows="));
+
+                boolean showCount = Arrays.stream(args).anyMatch(arg ->
+                        arg.equalsIgnoreCase("#count"));
+
+                int rowsPerPage = cfg.getRowsInPage();
+
+                if (hasCustomRows) {
+                    Optional<String> customRowsOpt = Arrays.stream(args)
+                            .filter(arg -> arg.startsWith("-r=") || arg.startsWith("-rows="))
+                            .findFirst();
+
+                    if (customRowsOpt.isPresent()) {
+                        String customRows = customRowsOpt.get();
+
+                        String[] split = customRows.split("=");
+
+                        if (split.length == 2) {
+                            try {
+                                rowsPerPage = Integer.parseInt(split[1]);
+                            } catch (NumberFormatException ex) {
+                                Messenger.warn("Failed to parse custom rows per page.");
+                                Messenger.debug(ex.getMessage());
+                            }
+                        }
+                    }
+                }
 
                 Messenger.debug("User: " + user);
                 Messenger.debug("Time: " + time);
@@ -218,8 +263,9 @@ public class DiscordListener extends ListenerAdapter {
                 Messenger.debug("Filter: " + filter);
                 Messenger.debug("Reverse: " + reverse);
 
-                if (action.isEmpty() || action.isBlank())
+                if (action.isBlank()) {
                     action = "all";
+                }
 
                 try {
                     List<String> results = coSQL.lookUpData(users, action, blocks, timeToSeconds(time));
@@ -230,11 +276,11 @@ public class DiscordListener extends ListenerAdapter {
                         return;
                     }
 
-                    ArrayList<Page> pages = new ArrayList<>();
+                    List<Page> pages = new ArrayList<>();
 
                     int rows = 0;
 
-                    if (results.size() == 0) {
+                    if (results.isEmpty()) {
                         String msg = PlaceholderAPI.setPlaceholders(null,
                                 plugin.getCfg().getMessage(Message.EMBED_NO_RESULTS));
 
@@ -245,8 +291,7 @@ public class DiscordListener extends ListenerAdapter {
                         return;
                     }
 
-                    if (filters.size() == 0 &&
-                            args[args.length - 1].equalsIgnoreCase("#count")) {
+                    if (filters.isEmpty() && showCount) {
                         String msg = PlaceholderAPI.setPlaceholders(null,
                                 plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
                                         .replace("%count%", String.valueOf(results.size())));
@@ -269,6 +314,14 @@ public class DiscordListener extends ListenerAdapter {
                         String xyz = data.split("\n")[0];
                         String value = data.split("\n")[1];
 
+                        if (cfg.getExcludedData().stream()
+                                .anyMatch(s -> StringUtils.containsIgnoreCase(value, s))) {
+                            if (reverse) i--;
+                            else i++;
+
+                            continue;
+                        }
+
                         String[] xyzSplit = xyz.split(" ");
 
                         String x = xyzSplit[0].replace("X:", "");
@@ -285,7 +338,7 @@ public class DiscordListener extends ListenerAdapter {
 
                         data = xyzRow + "\n" + value;
 
-                        if (filters.size() != 0) {
+                        if (!filters.isEmpty()) {
                             String tempFilter = data.split("\n")[1].replace("/", "");
                             String[] split = tempFilter.split(" ");
 
@@ -300,8 +353,7 @@ public class DiscordListener extends ListenerAdapter {
                             }
 
                             if (skip) {
-                                if (reverse)
-                                    i--;
+                                if (reverse) i--;
                                 else i++;
 
                                 continue;
@@ -312,23 +364,29 @@ public class DiscordListener extends ListenerAdapter {
 
                         rows++;
 
-                        if (cfg.showCount()) {
-                            String msg = PlaceholderAPI.setPlaceholders(null,
-                                    plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
-                                            .replace("%count%", String.valueOf(results.size())));
+                        if (cfg.isShowCount()) {
+                            if (!filters.isEmpty()) {
+                                embed.setDescription(String.format("Found %d %s.",
+                                        filterMatches, filterMatches == 1 ? "result" : "results"));
+                            } else {
+                                String msg = PlaceholderAPI.setPlaceholders(null,
+                                        plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
+                                                .replace("%count%", String.valueOf(results.size())));
 
-                            embed.setDescription(msg);
+                                embed.setDescription(msg);
+                            }
                         }
 
-                        if (rows >= this.cfg.getRowsInPage()) {
+                        if (rows >= rowsPerPage) {
                             String footer = setPlaceholders(cfg.getEmbedFooter())
                                     .replace("%page%", String.valueOf(pages.size() + 1))
                                     .replace("%message_author_tag%", e.getAuthor().getAsTag())
-                                    .replace("%message_author_name%", e.getMember().getEffectiveName());
+                                    .replace("%message_author_name%", e.getMember().getEffectiveName())
+                                    .replace("%message_member_nickname%", e.getMember().getNickname());
 
                             embed.setFooter(footer);
 
-                            pages.add(new Page(PageType.EMBED, embed.build()));
+                            pages.add(InteractPage.of(embed.build()));
 
                             embed = new EmbedBuilder()
                                     .setAuthor(setPlaceholders(cfg.getMessage(Message.EMBED_TITLE)))
@@ -337,13 +395,11 @@ public class DiscordListener extends ListenerAdapter {
                             rows = 0;
                         }
 
-                        if (reverse)
-                            i--;
+                        if (reverse) i--;
                         else i++;
                     }
 
-                    if (filters.size() != 0 &&
-                            args[args.length - 1].equalsIgnoreCase("#count")) {
+                    if (!filters.isEmpty() && showCount) {
                         embed.setDescription(String.format("Found %d %s.",
                                 filterMatches, filterMatches == 1 ? "result" : "results"));
 
@@ -354,7 +410,7 @@ public class DiscordListener extends ListenerAdapter {
                         return;
                     }
 
-                    if (filters.size() != 0 && filterMatches == 0) {
+                    if (!filters.isEmpty() && filterMatches == 0) {
                         embed.setDescription(setPlaceholders(cfg.getMessage(Message.EMBED_NO_RESULTS_FILTER)));
 
                         sendEmbed(channel, embed);
@@ -362,11 +418,12 @@ public class DiscordListener extends ListenerAdapter {
                         return;
                     }
 
-                    if (pages.size() == 0)
-                        pages.add(new Page(PageType.EMBED, embed.build()));
+                    if (pages.isEmpty()) {
+                        pages.add(InteractPage.of(embed.build()));
+                    }
 
-                    channel.sendMessage((MessageEmbed) pages.get(0).getContent())
-                            .queue(success -> Pages.paginate(success, pages));
+                    channel.sendMessageEmbeds((MessageEmbed) pages.getFirst().getContent())
+                            .queue(success -> Pages.paginate(success, pages, true));
                 } catch (SQLException ex) {
                     Messenger.debug(ex.getMessage());
 
@@ -380,16 +437,25 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     private void outputFile(List<String> results, MessageChannel channel) {
-        if (results.size() == 0) {
+        if (results.isEmpty()) {
             channel.sendMessage(setPlaceholders(
                     plugin.getCfg().getMessage(Message.EMBED_NO_RESULTS))).queue();
 
             return;
         }
 
-        String sb = results.stream().map(s -> s + "\n").collect(Collectors.joining());
+        List<String> excludes = cfg.getExcludedData();
 
-        channel.sendFile(sb.getBytes(), "results.txt").queue();
+        String lines = results.stream()
+                .filter(s -> excludes.stream().noneMatch(s::contains))
+                .collect(Collectors.joining("\n"));
+
+        try (FileUpload fileUpload = FileUpload.fromData(lines.getBytes(), "results.txt")) {
+            channel.sendFiles(fileUpload).queue();
+        } catch (Exception ex) {
+            Messenger.warn("Failed to create file upload: " + ex.getMessage());
+            channel.sendMessage("An error occurred while creating the results file.").queue();
+        }
     }
 
     private long timeToSeconds(String time) {
@@ -431,11 +497,9 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     private String getInfo(String[] args, String lu1, String lu2) {
-        for (String arg : args)
-            if (arg.startsWith(lu1) || arg.startsWith(lu2))
-                return clean(arg, lu1, lu2);
-
-        return "";
+        return Arrays.stream(args).filter(arg -> arg.startsWith(lu1)
+                        || arg.startsWith(lu2)).findFirst().map(arg -> clean(arg, lu1, lu2))
+                .orElse("");
     }
 
     private String setPlaceholders(String text) {
@@ -450,16 +514,17 @@ public class DiscordListener extends ListenerAdapter {
         return origin.trim().replace(tr1, "").replace(tr2, "");
     }
 
-    private void sendEmbed(MessageChannel ch, EmbedBuilder embed) {
-        ch.sendMessage(embed.build()).queue();
+    private void sendEmbed(@NotNull MessageChannel ch, @NotNull EmbedBuilder embed) {
+        ch.sendMessageEmbeds(embed.build()).queue();
     }
 
-    private boolean alias(String cmd, String names) {
+    private boolean alias(@NotNull String cmd, @NotNull String names) {
         return Arrays.stream(names.split(", ")).anyMatch(cmd::equalsIgnoreCase);
     }
 
-    private String clearSQL(String data) {
+    private String clearSQL(@NotNull String data) {
         return data.toLowerCase().replaceAll(
-                "(select|where|group,by|order,by|left,join|union|co_)", "");
+                "\\b(select|where|group by|order by|left join|union|co_)\\b", ""
+        );
     }
 }

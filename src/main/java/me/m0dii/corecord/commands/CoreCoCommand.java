@@ -15,13 +15,15 @@ import java.util.List;
 public class CoreCoCommand implements CommandExecutor, TabCompleter {
     private final CoreCord plugin;
 
-    public CoreCoCommand(CoreCord plugin) {
+    public CoreCoCommand(@NotNull CoreCord plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd,
-                             @NotNull String alias, @NotNull String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender,
+                             @NotNull Command cmd,
+                             @NotNull String alias,
+                             @NotNull String @NotNull [] args) {
         if (sender instanceof ConsoleCommandSender) {
             if (args.length == 1) {
                 if (args[0].equalsIgnoreCase("reload")) {
@@ -46,8 +48,8 @@ public class CoreCoCommand implements CommandExecutor, TabCompleter {
                 if (allowedToUse(args, "version", p)) {
                     Messenger msg = new Messenger(p);
 
-                    msg.add("&bCoreProtect version: &3" + CoreProtect.getInstance().getDescription().getVersion())
-                            .add("&bCoreCord version: &3" + plugin.getDescription().getVersion())
+                    msg.add("&bCoreProtect version: &3" + CoreProtect.getInstance().getPluginMeta().getVersion())
+                            .add("&bCoreCord version: &3" + plugin.getPluginMeta().getVersion())
                             .add("&bServer version: &3" + plugin.getServer().getVersion())
                             .add("&bOS: &3" + System.getProperty("os.name"))
                             .add("&bBukkit: &3" + plugin.getServer().getBukkitVersion())
@@ -65,7 +67,7 @@ public class CoreCoCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
-                                                @NotNull String alias, @NotNull String[] args) {
+                                                @NotNull String alias, @NotNull String @NotNull [] args) {
         List<String> completes = new ArrayList<>();
 
         if (args.length == 1) {
