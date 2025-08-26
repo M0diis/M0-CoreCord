@@ -9,7 +9,7 @@ tasks.withType<JavaCompile> {
 }
 
 group = "me.m0dii"
-version = "3.0.0"
+version = "3.0.1"
 
 tasks.shadowJar {
     relocate("org.bstats", "me.m0dii.corecord")

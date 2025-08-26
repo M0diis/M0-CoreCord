@@ -142,22 +142,21 @@ public class Config {
         loadWebhooks();
     }
 
-    private Map<String, WebhookLogger> webhooks = new HashMap<>();
+    private final List<WebhookLogger> webhooks = new ArrayList<>();
 
-    public Map<String, WebhookLogger> getLoggers() {
+    public List<WebhookLogger> getLoggers() {
         return webhooks;
     }
 
-    public WebhookLogger getWebhook(String... actions) {
-        return webhooks.values().stream()
-                .filter(l -> Arrays.stream(actions)
-                        .anyMatch(l::hasAction))
+    public WebhookLogger getWebhook(EActionType action) {
+        return webhooks.stream()
+                .filter(logger -> logger.hasAction(action))
                 .findFirst()
                 .orElse(null);
     }
 
     private void loadWebhooks() {
-        this.webhooks = new HashMap<>();
+        this.webhooks.clear();
 
         ConfigurationSection loggerSection = this.cfg.getConfigurationSection("webhook-loggers");
 
@@ -174,14 +173,28 @@ public class Config {
             }
 
             String url = section.getString("url");
-            String channelID = section.getString("channel-id");
 
-            if(url != null && !"webhook-url-goes-here".equals(url)) {
-                WebhookLogger webhook = new WebhookLogger(url, channelID);
+            if (url != null && !"webhook-url-goes-here".equals(url)) {
+                WebhookLogger webhook = new WebhookLogger(url);
 
-                webhook.addActions(section.getStringList("actions"));
+                List<EActionType> actions = section.getStringList("actions").stream()
+                        .map(EActionType::fromString)
+                        .filter(actionType -> {
+                            if (actionType != null) {
+                                return true;
+                            }
 
-                webhooks.put(channelID, webhook);
+                            Messenger.warn("Webhook logger '" + key + "' has an invalid action type in the config.");
+
+                            return false;
+                        })
+                        .toList();
+
+                webhook.addActions(actions);
+
+                webhooks.add(webhook);
+
+                Messenger.debug("Loaded webhook logger '" + key + "' with actions: " + actions);
             } else {
                 Messenger.warn("Webhook logger '" + key + "' does not have a valid URL.");
             }

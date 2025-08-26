@@ -13,12 +13,9 @@ import java.util.List;
 public class WebhookLogger {
     private WebhookClient client;
 
-    private final List<String> actions;
+    private final List<EActionType> actions;
 
-    private final String channelID;
-
-    public WebhookLogger(@NotNull String url, @Nullable String channelID) {
-        this.channelID = channelID;
+    public WebhookLogger(@NotNull String url) {
         this.actions = new ArrayList<>();
 
         setUp(url);
@@ -40,11 +37,11 @@ public class WebhookLogger {
         client.close();
     }
 
-    public boolean hasAction(String action) {
+    public boolean hasAction(EActionType action) {
         return actions.contains(action);
     }
 
-    public void addActions(List<String> actions) {
+    public void addActions(@NotNull List<EActionType> actions) {
         this.actions.addAll(actions);
     }
 

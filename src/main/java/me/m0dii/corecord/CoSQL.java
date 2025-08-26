@@ -1,6 +1,5 @@
 package me.m0dii.corecord;
 
-import me.m0dii.corecord.utils.Config;
 import me.m0dii.corecord.utils.Messenger;
 import me.m0dii.corecord.utils.Table;
 import me.m0dii.corecord.utils.Utils;
@@ -22,29 +21,27 @@ import java.util.stream.Collectors;
 public class CoSQL {
     public static Connection connection;
 
-    private boolean useMySQL;
-    private String host, database, username, password;
-    private int port;
+    private final boolean useMySQL;
 
-    private final Config cfg;
+    private final String host;
+    private final String database;
+    private final String username;
+    private final String password;
+
+    private final int port;
 
     private final CoreCord plugin;
 
     public CoSQL(CoreCord plugin) {
-        this.cfg = plugin.getCfg();
         this.plugin = plugin;
 
-        this.setUpConnection();
-    }
+        this.useMySQL = plugin.getCfg().isUseMySQL();
 
-    public void setUpConnection() {
-        this.useMySQL = cfg.isUseMySQL();
-
-        this.host = cfg.getHost();
-        this.database = cfg.getDatabase();
-        this.username = cfg.getUsername();
-        this.password = cfg.getPassword();
-        this.port = cfg.getPort();
+        this.host = plugin.getCfg().getHost();
+        this.database = plugin.getCfg().getDatabase();
+        this.username = plugin.getCfg().getUsername();
+        this.password = plugin.getCfg().getPassword();
+        this.port = plugin.getCfg().getPort();
 
         this.connect();
     }

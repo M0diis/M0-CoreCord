@@ -2,6 +2,7 @@ package me.m0dii.corecord.listeners;
 
 import me.m0dii.corecord.CoreCord;
 import me.m0dii.corecord.utils.Config;
+import me.m0dii.corecord.utils.EActionType;
 import me.m0dii.corecord.utils.WebhookLogger;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -29,7 +30,7 @@ public class LoggerListener implements Listener {
 
     @EventHandler
     public void onBlockPlace(final BlockPlaceEvent event) {
-        WebhookLogger hook = cfg.getWebhook("+block", "place");
+        WebhookLogger hook = cfg.getWebhook(EActionType.BLOCK_PLACE);
 
         if (hook == null) {
             return;
@@ -45,7 +46,7 @@ public class LoggerListener implements Listener {
 
     @EventHandler
     public void onChat(final AsyncPlayerChatEvent event) {
-        WebhookLogger hook = cfg.getWebhook("chat");
+        WebhookLogger hook = cfg.getWebhook(EActionType.CHAT_MESSAGE);
 
         if (hook == null) {
             return;
@@ -59,7 +60,7 @@ public class LoggerListener implements Listener {
 
     @EventHandler
     public void onCommand(final PlayerCommandPreprocessEvent event) {
-        WebhookLogger hook = cfg.getWebhook("command");
+        WebhookLogger hook = cfg.getWebhook(EActionType.COMMAND_EXECUTION);
 
         if (hook == null) {
             return;
@@ -75,7 +76,7 @@ public class LoggerListener implements Listener {
 
     @EventHandler
     public void onItemDrop(final PlayerDropItemEvent event) {
-        WebhookLogger hook = cfg.getWebhook("-item", "drop", "dropitem");
+        WebhookLogger hook = cfg.getWebhook(EActionType.ITEM_DROP);
 
         if (hook == null) {
             return;
@@ -92,7 +93,7 @@ public class LoggerListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onItemPickup(final PlayerAttemptPickupItemEvent event) {
-        WebhookLogger hook = cfg.getWebhook("+item", "pickup", "pickupitem");
+        WebhookLogger hook = cfg.getWebhook(EActionType.ITEM_PICKUP);
 
         if (hook == null) {
             return;
@@ -109,7 +110,7 @@ public class LoggerListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onContainerOpen(final PlayerInteractEvent event) {
-        WebhookLogger hook = cfg.getWebhook("container");
+        WebhookLogger hook = cfg.getWebhook(EActionType.CONTAINER_OPEN);
 
         if (hook == null) {
             return;
@@ -136,7 +137,7 @@ public class LoggerListener implements Listener {
 
     @EventHandler
     public void onMobKill(final EntityDeathEvent event) {
-        WebhookLogger hook = cfg.getWebhook("kill", "mobkill");
+        WebhookLogger hook = cfg.getWebhook(EActionType.KILL);
 
         if (hook == null) {
             return;
@@ -158,7 +159,7 @@ public class LoggerListener implements Listener {
 
     @EventHandler
     public void onBlockBreak(final BlockBreakEvent event) {
-        WebhookLogger hook = cfg.getWebhook("-block", "break");
+        WebhookLogger hook = cfg.getWebhook(EActionType.BLOCK_BREAK);
 
         if (hook == null) {
             return;
@@ -174,7 +175,7 @@ public class LoggerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(final PlayerJoinEvent event) {
-        WebhookLogger hook = cfg.getWebhook("join", "+session", "playerjoin");
+        WebhookLogger hook = cfg.getWebhook(EActionType.PLAYER_JOIN);
 
         if (hook == null) {
             return;
@@ -189,7 +190,7 @@ public class LoggerListener implements Listener {
 
     @EventHandler
     public void onPlayerLeave(final PlayerQuitEvent event) {
-        WebhookLogger hook = cfg.getWebhook("quit", "-session", "playerquit");
+        WebhookLogger hook = cfg.getWebhook(EActionType.PLAYER_QUIT);
 
         if (hook == null) {
             return;

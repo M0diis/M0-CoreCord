@@ -152,7 +152,7 @@ public class CoreCord extends JavaPlugin {
             }
         }
 
-        for (WebhookLogger logger : cfg.getLoggers().values()) {
+        for (WebhookLogger logger : cfg.getLoggers()) {
             logger.close();
         }
 
