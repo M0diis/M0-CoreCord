@@ -34,10 +34,6 @@ public class Messenger {
         s.sendMessage(Utils.format(message));
     }
 
-    public static String replace(String in, String what, Object to) {
-        return in.replace(what, String.valueOf(to));
-    }
-
     public static void debug(String msg) {
         if (plugin.getCfg().isDebugEnabled()) {
             String prefix = "&3[&bCoreCord - DEBUG&3]&r ";

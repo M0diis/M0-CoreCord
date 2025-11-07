@@ -379,10 +379,16 @@ public class DiscordListener extends ListenerAdapter {
 
                         if (rows >= rowsPerPage) {
                             String footer = setPlaceholders(cfg.getEmbedFooter())
-                                    .replace("%page%", String.valueOf(pages.size() + 1))
-                                    .replace("%message_author_tag%", e.getAuthor().getAsTag())
-                                    .replace("%message_author_name%", e.getMember().getEffectiveName())
-                                    .replace("%message_member_nickname%", e.getMember().getNickname());
+                                    .replace("%page%", String.valueOf(pages.size() + 1));
+
+                            if(e.getMember() != null) {
+                                if(e.getMember().getNickname() != null) {
+                                    footer = footer.replace("%message_member_nickname%", e.getMember().getNickname());
+                                } else {
+                                    footer = footer.replace("%message_member_nickname%", e.getMember().getEffectiveName());
+                                }
+                                footer = footer.replace("%message_author_name%", e.getMember().getEffectiveName());
+                            }
 
                             embed.setFooter(footer);
 

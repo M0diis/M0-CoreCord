@@ -31,10 +31,6 @@ public class Utils {
         return ChatColor.translateAlternateColorCodes('&', text);
     }
 
-    public static String strip(String text) {
-        return ChatColor.stripColor(text);
-    }
-
     public static boolean isDigit(String str) {
         return str.matches("-?\\d+(\\.\\d+)?");
     }
