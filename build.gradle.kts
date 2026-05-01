@@ -47,7 +47,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    compileOnly(files("libs/CoreProtect-22.2.jar"))
+    compileOnly(files("libs/CoreProtect-CE-23.1.jar"))
     compileOnly("me.clip:placeholderapi:2.12.2")
 
     compileOnly("org.projectlombok:lombok:1.18.46")
