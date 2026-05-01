@@ -27,22 +27,18 @@ tasks.processResources {
 repositories {
     mavenLocal()
     mavenCentral()
-    maven {
-        name = "papermc"
-        url = uri("https://repo.papermc.io/repository/maven-public/")
-    }
-    maven {
-        name = "jitpack.io"
-        url = uri("https://jitpack.io")
-    }
-    maven { url = uri("https://repo.extendedclip.com/releases/") }
-    maven { url = uri("https://ci.ender.zone/plugin/repository/everything/") }
-    maven { url = uri("https://repo.essentialsx.net/releases/") }
-    maven { url = uri("https://repo.essentialsx.net/snapshots/") }
-    maven { url = uri("https://maven.enginehub.org/repo/") }
-    maven { url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") }
-    maven { url = uri("https://ci.ender.zone/plugin/repository/everything/") }
-    maven { url = uri("https://repo.extendedclip.com/content/repositories/placeholderapi/") }
+
+    listOf(
+        "https://repo.papermc.io/repository/maven-public/",
+        "https://jitpack.io/",
+        "https://repo.extendedclip.com/content/repositories/placeholderapi/",
+        "https://repo.extendedclip.com/content/repositories/",
+        "https://ci.ender.zone/plugin/repository/everything/",
+        "https://repo.essentialsx.net/content/repositories/snapshots/",
+        "https://repo.essentialsx.net/content/repositories/releases/",
+        "https://maven.enginehub.org/repo/",
+        "https://hub.spigotmc.org/nexus/content/repositories/snapshots/",
+    ).forEach { maven { url = uri(it) } }
 }
 
 dependencies {
