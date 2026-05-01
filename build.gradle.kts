@@ -9,7 +9,7 @@ tasks.withType<JavaCompile> {
 }
 
 group = "me.m0dii"
-version = "3.0.1"
+version = "3.0.2"
 
 tasks.shadowJar {
     relocate("org.bstats", "me.m0dii.corecord")
@@ -46,18 +46,17 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly(files("libs/CoreProtect-22.2.jar"))
-    compileOnly("me.clip:placeholderapi:2.11.6")
+    compileOnly("me.clip:placeholderapi:2.12.2")
 
-    compileOnly("org.projectlombok:lombok:1.18.30")
+    compileOnly("org.projectlombok:lombok:1.18.46")
 
     implementation("org.xerial:sqlite-jdbc:3.41.2.2")
     implementation("com.mysql:mysql-connector-java:8.4.0")
 
     implementation("org.bstats:bstats-bukkit:2.2.1")
 
-//    implementation("net.dv8tion:JDA:6.0.0-rc.2") {
     implementation("net.dv8tion:JDA:5.6.1") {
         exclude(module = "opus-java")
     }
@@ -65,8 +64,7 @@ dependencies {
     implementation("club.minnced:discord-webhooks:0.8.0")
     implementation("com.github.ygimenez:Pagination-Utils:4.1.4b")
 
-    // implementation("org.apache.commons:commons-compress:1.3")
-    annotationProcessor("org.projectlombok:lombok:1.18.30")
+    annotationProcessor("org.projectlombok:lombok:1.18.46")
 }
 
 java {
