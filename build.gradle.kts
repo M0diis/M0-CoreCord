@@ -53,7 +53,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.46")
 
     implementation("org.xerial:sqlite-jdbc:3.41.2.2")
-    implementation("com.mysql:mysql-connector-java:8.4.0")
+    implementation("com.mysql:mysql-connector-j:8.4.0")
 
     implementation("org.bstats:bstats-bukkit:2.2.1")
 
