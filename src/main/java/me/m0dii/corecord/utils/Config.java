@@ -45,6 +45,8 @@ public class Config {
     @Getter
     private String botToken;
     @Getter
+    private boolean discordTokenConfigured;
+    @Getter
     private String botPrefix;
 
     @Getter
@@ -88,11 +90,10 @@ public class Config {
         this.port = this.cfg.getInt("mysql-port", 3306);
 
         this.botToken = getStr("discord-bot-token");
+        this.discordTokenConfigured = !(this.botToken.isEmpty() || this.botToken.equals("your-token"));
 
-        if (this.botToken.isEmpty() || this.botToken.equals("your-token")) {
-            Messenger.warn("Discord bot token is not set in the config! Please set it to use Discord features. The plugin will be disabled.");
-            plugin.getServer().getPluginManager().disablePlugin(plugin);
-            return;
+        if (!this.discordTokenConfigured) {
+            Messenger.warn("Discord bot token is not set in the config. Discord command features are disabled until token is configured.");
         }
 
         this.botPrefix = getStr("command-prefix", "co!");
@@ -221,7 +222,7 @@ public class Config {
     }
 
     public String getEmbedRight() {
-        if (this.embedLeft.isEmpty()) {
+        if (this.embedRight.isEmpty()) {
             return "➡️️";
         }
 
@@ -229,7 +230,7 @@ public class Config {
     }
 
     public String getEmbedColor() {
-        if (this.embedLeft.isEmpty()) {
+        if (this.embedColor.isEmpty()) {
             return "#00FFFF";
         }
 
@@ -247,8 +248,12 @@ public class Config {
     public int getRowsInPage() {
         if (this.rowsInPage > 25) {
             rowsInPage = 25;
-
             Messenger.debug("Too many rows in one page. Defaulting to 25.");
+        }
+
+        if (this.rowsInPage < 1) {
+            rowsInPage = 1;
+            Messenger.debug("Rows in one page cannot be below 1. Defaulting to 1.");
         }
 
         return this.rowsInPage;

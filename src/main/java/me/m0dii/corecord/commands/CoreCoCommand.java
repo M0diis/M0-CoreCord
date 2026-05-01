@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CoreCoCommand implements CommandExecutor, TabCompleter {
+    private static final String MAIN_PERMISSION = "corecord.main";
+    private static final String COMMAND_PERMISSION_PREFIX = "corecord.command.";
+
     private final CoreCord plugin;
 
     public CoreCoCommand(@NotNull CoreCord plugin) {
@@ -30,19 +33,28 @@ public class CoreCoCommand implements CommandExecutor, TabCompleter {
                     this.plugin.getCfg().reload(this.plugin);
 
                     Messenger.sendf(sender, plugin.getCfg().getMessage(Message.GAME_CONFIG_RELOAD));
+                    return true;
+                }
+
+                if (args[0].equalsIgnoreCase("version")) {
+                    Messenger.sendf(sender, "&bCoreProtect version: &3" + CoreProtect.getInstance().getPluginMeta().getVersion());
+                    Messenger.sendf(sender, "&bCoreCord version: &3" + plugin.getPluginMeta().getVersion());
+                    Messenger.sendf(sender, "&bServer version: &3" + plugin.getServer().getVersion());
+                    return true;
                 }
             }
         }
 
         if (sender instanceof Player p) {
-            if (!p.hasPermission("corecord.main"))
+            if (!p.hasPermission(MAIN_PERMISSION))
                 return true;
 
-            if (args.length == 1 && p.hasPermission("")) {
+            if (args.length == 1) {
                 if (allowedToUse(args, "reload", p)) {
                     this.plugin.getCfg().reload(this.plugin);
 
                     Messenger.sendf(p, plugin.getCfg().getMessage(Message.GAME_CONFIG_RELOAD));
+                    return true;
                 }
 
                 if (allowedToUse(args, "version", p)) {
@@ -54,6 +66,7 @@ public class CoreCoCommand implements CommandExecutor, TabCompleter {
                             .add("&bOS: &3" + System.getProperty("os.name"))
                             .add("&bBukkit: &3" + plugin.getServer().getBukkitVersion())
                             .send();
+                    return true;
                 }
             }
         }
@@ -62,7 +75,7 @@ public class CoreCoCommand implements CommandExecutor, TabCompleter {
     }
 
     private boolean allowedToUse(String[] args, String cmd, Player pl) {
-        return args[0].equalsIgnoreCase(cmd) && pl.hasPermission("corecord.command." + cmd);
+        return args[0].equalsIgnoreCase(cmd) && pl.hasPermission(COMMAND_PERMISSION_PREFIX + cmd);
     }
 
     @Override
@@ -71,8 +84,13 @@ public class CoreCoCommand implements CommandExecutor, TabCompleter {
         List<String> completes = new ArrayList<>();
 
         if (args.length == 1) {
-            completes.add("reload");
-            completes.add("version");
+            if (sender.hasPermission(COMMAND_PERMISSION_PREFIX + "reload")) {
+                completes.add("reload");
+            }
+
+            if (sender.hasPermission(COMMAND_PERMISSION_PREFIX + "version")) {
+                completes.add("version");
+            }
         }
 
         return completes;

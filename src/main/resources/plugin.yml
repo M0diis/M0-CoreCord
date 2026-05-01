@@ -2,6 +2,7 @@ name: M0-CoreCord
 main: me.m0dii.corecord.CoreCord
 description: Discord integration for CoreProtect.
 version: ${version}
+folia-supported: true
 api-version: 1.13
 author: M0dii
 depend: [CoreProtect]
@@ -13,10 +14,10 @@ permissions:
   corecord.main:
     description: Main command.
     default: op
-  corecord.comand.reload:
+  corecord.command.reload:
     description: Reload command.
     default: op
-  corecord.comand.version:
+  corecord.command.version:
     description: Version command.
     default: op
 commands:

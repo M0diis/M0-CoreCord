@@ -20,15 +20,10 @@ import org.bstats.bukkit.Metrics;
 import org.bstats.charts.CustomChart;
 import org.bstats.charts.MultiLineChart;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -71,6 +66,12 @@ public class CoreCord extends JavaPlugin {
 
         prepareConfig();
 
+        if (this.cfg == null) {
+            Messenger.warn("Configuration failed to load. Disabling plugin.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         PluginManager pm = getServer().getPluginManager();
 
         this.msgListener = new DiscordListener(this);
@@ -80,8 +81,11 @@ public class CoreCord extends JavaPlugin {
         pm.registerEvents(new PlayerJoin(this), this);
         pm.registerEvents(new LoggerListener(this), this);
 
-        Optional.ofNullable(getCommand("corecord"))
-                .ifPresent(cmd -> cmd.setExecutor(new CoreCoCommand(this)));
+        Optional.ofNullable(getCommand("corecord")).ifPresent(cmd -> {
+            CoreCoCommand coreCommand = new CoreCoCommand(this);
+            cmd.setExecutor(coreCommand);
+            cmd.setTabCompleter(coreCommand);
+        });
 
         setupMetrics();
 
@@ -97,7 +101,7 @@ public class CoreCord extends JavaPlugin {
         Messenger.info("");
         Messenger.info("M0-CoreCord has been enabled!");
 
-        checkForUpdates();
+//        checkForUpdates();
     }
 
     private void checkForUpdates() {
@@ -137,19 +141,8 @@ public class CoreCord extends JavaPlugin {
             this.discord.shutdownNow();
         }
 
-        if (CoSQL.connection != null) {
-            try {
-                if (!CoSQL.connection.isClosed()) {
-                    CoSQL.connection.close();
-
-                    Messenger.info("SQL connection has been closed successfully.");
-                }
-
-            } catch (SQLException ex) {
-                Messenger.debug(ex.getMessage());
-
-                Messenger.warn("Failed to close SQL connection..");
-            }
+        if (coSQL != null) {
+            coSQL.close();
         }
 
         for (WebhookLogger logger : cfg.getLoggers()) {
@@ -160,24 +153,27 @@ public class CoreCord extends JavaPlugin {
     }
 
     private void prepareConfig() {
-        File configFile = new File(this.getDataFolder(), "config.yml");
-
-        if (!configFile.exists()) {
-            //noinspection ResultOfMethodCallIgnored
-            configFile.getParentFile().mkdirs();
-
-            this.copy(this.getResource("config.yml"), configFile);
-        }
-
-        YamlConfiguration.loadConfiguration(configFile);
+        saveDefaultConfig();
 
         this.cfg = new Config();
         this.cfg.load(this);
 
-        this.copy(this.getResource("config.yml_default"), new File(this.getDataFolder(), "config.yml_default"));
+        File defaultConfigFile = new File(this.getDataFolder(), "config.yml_default");
+        if (!defaultConfigFile.exists()) {
+            saveResource("config.yml_default", false);
+        }
     }
 
     private void initializeDiscordBOT() {
+        if (this.discord != null) {
+            return;
+        }
+
+        if (!cfg.isDiscordTokenConfigured()) {
+            return;
+        }
+
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
         try {
             this.discord = JDABuilder.createDefault(cfg.getBotToken())
                     .enableIntents(
@@ -204,32 +200,14 @@ public class CoreCord extends JavaPlugin {
 
             Messenger.info("Logged in successfully as " + discord.getSelfUser().getAsTag());
         } catch (InterruptedException | InvalidHandlerException ex) {
+            if (ex instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             Messenger.warn("Discord BOT has failed to connect..");
             Messenger.warn("Please check the configuration and make sure token is correct.");
 
             Messenger.debug(ex.getMessage());
         }
-    }
-
-    private void copy(InputStream in, File file) {
-        if (in != null) {
-            try {
-                OutputStream out = new FileOutputStream(file);
-
-                byte[] buf = new byte[1024];
-
-                int len;
-
-                while ((len = in.read(buf)) > 0)
-                    out.write(buf, 0, len);
-
-                out.close();
-                in.close();
-            } catch (Exception ex) {
-                Messenger.warn("Error copying config file..");
-
-                Messenger.debug(ex.getMessage());
-            }
-        }
+        });
     }
 }

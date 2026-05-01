@@ -3,12 +3,12 @@ package me.m0dii.corecord.listeners;
 import com.github.ygimenez.method.Pages;
 import com.github.ygimenez.model.InteractPage;
 import com.github.ygimenez.model.Page;
-import me.clip.placeholderapi.PlaceholderAPI;
 import me.m0dii.corecord.CoSQL;
 import me.m0dii.corecord.CoreCord;
 import me.m0dii.corecord.utils.Config;
 import me.m0dii.corecord.utils.Message;
 import me.m0dii.corecord.utils.Messenger;
+import me.m0dii.corecord.utils.PlaceholderResolver;
 import me.m0dii.corecord.utils.Utils;
 import net.coreprotect.CoreProtect;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -30,8 +30,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DiscordListener extends ListenerAdapter {
-    private final boolean usePAPI;
-
     private final CoSQL coSQL;
     private final CoreCord plugin;
     private final Config cfg;
@@ -40,8 +38,6 @@ public class DiscordListener extends ListenerAdapter {
         this.plugin = plugin;
         this.cfg = plugin.getCfg();
         this.coSQL = plugin.getCoSQL();
-
-        this.usePAPI = plugin.getServer().getPluginManager().getPlugin("PlaceholderAPI") != null;
     }
 
     @Override
@@ -70,7 +66,7 @@ public class DiscordListener extends ListenerAdapter {
         }
 
         EmbedBuilder embed = new EmbedBuilder()
-                .setAuthor(PlaceholderAPI.setPlaceholders(null, plugin.getCfg().getEmbedTitle()))
+                .setAuthor(setPlaceholders(plugin.getCfg().getEmbedTitle()))
                 .setFooter(e.getAuthor().getAsTag(), null)
                 .setColor(Color.decode(plugin.getCfg().getEmbedColor()));
 
@@ -146,32 +142,17 @@ public class DiscordListener extends ListenerAdapter {
         }
 
         if (alias(cmd, "testconnection") && allowed) {
-            try {
-                boolean connected = !CoSQL.connection.isClosed();
+            boolean connected = coSQL.isConnected();
 
-                if (connected) {
-                    embed.setDescription("Connection is established successfully.");
-                } else {
-                    embed.setDescription("Connection has not been found. Reconnecting..");
-
-                    coSQL.connect();
-                }
-
-                sendEmbed(channel, embed);
-
-                return;
-            } catch (SQLException ex) {
-                Messenger.warn("Failed to connect to the database..");
-                Messenger.debug(ex.getMessage());
-
-                embed.setDescription("Cannot find a connection to the database, trying to reconnect..");
-
+            if (connected) {
+                embed.setDescription("Connection is established successfully.");
+            } else {
+                embed.setDescription("Connection has not been found. Reconnecting..");
                 coSQL.connect();
-
-                sendEmbed(channel, embed);
-
-                return;
             }
+
+            sendEmbed(channel, embed);
+            return;
         }
 
         if (args.length >= 2 && allowed) {
@@ -200,7 +181,6 @@ public class DiscordListener extends ListenerAdapter {
 
                 String action = getInfo(args, "a:", "action:");
 
-                String[] actions = action.split(",");
 
                 String block = getInfo(args, "b:", "block:");
 
@@ -218,7 +198,7 @@ public class DiscordListener extends ListenerAdapter {
                     filters = Arrays.asList(filter.trim().split(","));
                 }
 
-                boolean reverse = Arrays.stream(args).noneMatch(arg ->
+                boolean reverse = Arrays.stream(args).anyMatch(arg ->
                         arg.equalsIgnoreCase("-r")
                                 || arg.equalsIgnoreCase("-reverse"));
 
@@ -248,6 +228,11 @@ public class DiscordListener extends ListenerAdapter {
                         if (split.length == 2) {
                             try {
                                 rowsPerPage = Integer.parseInt(split[1]);
+                                if (rowsPerPage < 1) {
+                                    rowsPerPage = 1;
+                                } else if (rowsPerPage > 25) {
+                                    rowsPerPage = 25;
+                                }
                             } catch (NumberFormatException ex) {
                                 Messenger.warn("Failed to parse custom rows per page.");
                                 Messenger.debug(ex.getMessage());
@@ -281,8 +266,7 @@ public class DiscordListener extends ListenerAdapter {
                     int rows = 0;
 
                     if (results.isEmpty()) {
-                        String msg = PlaceholderAPI.setPlaceholders(null,
-                                plugin.getCfg().getMessage(Message.EMBED_NO_RESULTS));
+                        String msg = setPlaceholders(plugin.getCfg().getMessage(Message.EMBED_NO_RESULTS));
 
                         embed.setDescription(msg);
 
@@ -292,9 +276,8 @@ public class DiscordListener extends ListenerAdapter {
                     }
 
                     if (filters.isEmpty() && showCount) {
-                        String msg = PlaceholderAPI.setPlaceholders(null,
-                                plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
-                                        .replace("%count%", String.valueOf(results.size())));
+                        String msg = setPlaceholders(plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
+                                .replace("%count%", String.valueOf(results.size())));
 
                         embed.setDescription(msg);
 
@@ -369,9 +352,8 @@ public class DiscordListener extends ListenerAdapter {
                                 embed.setDescription(String.format("Found %d %s.",
                                         filterMatches, filterMatches == 1 ? "result" : "results"));
                             } else {
-                                String msg = PlaceholderAPI.setPlaceholders(null,
-                                        plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
-                                                .replace("%count%", String.valueOf(results.size())));
+                                String msg = setPlaceholders(plugin.getCfg().getMessage(Message.EMBED_RESULT_COUNT)
+                                        .replace("%count%", String.valueOf(results.size())));
 
                                 embed.setDescription(msg);
                             }
@@ -467,17 +449,20 @@ public class DiscordListener extends ListenerAdapter {
     private long timeToSeconds(String time) {
         long total = 0;
 
-        String tempDigit = "";
+        StringBuilder tempDigit = new StringBuilder();
 
         for (int i = 0; i < time.length(); i++) {
             char c = time.charAt(i);
 
             if (Utils.isDigit(String.valueOf(c))) {
-                tempDigit += c;
+                tempDigit.append(c);
             } else {
-                total += getSecondsFromTime(tempDigit, String.valueOf(c));
+                if (c == ',' || Character.isWhitespace(c)) {
+                    continue;
+                }
 
-                tempDigit = "";
+                total += getSecondsFromTime(tempDigit.toString(), String.valueOf(c));
+                tempDigit.setLength(0);
             }
         }
 
@@ -485,6 +470,10 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     private int getSecondsFromTime(String digit, String type) {
+        if (digit == null || digit.isBlank()) {
+            return 0;
+        }
+
         int total = 0;
 
         int num = Integer.parseInt(digit);
@@ -513,7 +502,7 @@ public class DiscordListener extends ListenerAdapter {
             return "";
         }
 
-        return usePAPI ? PlaceholderAPI.setPlaceholders(null, text) : text;
+        return PlaceholderResolver.apply(text, plugin.getServer().getPluginManager());
     }
 
     private String clean(String origin, String tr1, String tr2) {
@@ -529,8 +518,6 @@ public class DiscordListener extends ListenerAdapter {
     }
 
     private String clearSQL(@NotNull String data) {
-        return data.toLowerCase().replaceAll(
-                "\\b(select|where|group by|order by|left join|union|co_)\\b", ""
-        );
+        return data.toLowerCase().replaceAll("[^a-z0-9_,-]", "");
     }
 }

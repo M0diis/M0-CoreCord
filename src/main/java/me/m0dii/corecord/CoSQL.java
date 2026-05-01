@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CoSQL {
-    public static Connection connection;
+    private static Connection connection;
 
     private final boolean useMySQL;
 
@@ -46,7 +46,7 @@ public class CoSQL {
         this.connect();
     }
 
-    public void connect() {
+    public synchronized void connect() {
         String sep = File.separator;
 
         if (useMySQL) {
@@ -96,6 +96,39 @@ public class CoSQL {
         }
     }
 
+    private synchronized boolean ensureConnection() throws SQLException {
+        if (connection == null || connection.isClosed()) {
+            connect();
+        }
+
+        return connection != null && !connection.isClosed();
+    }
+
+    public synchronized boolean isConnected() {
+        try {
+            return connection != null && !connection.isClosed();
+        } catch (SQLException ex) {
+            Messenger.debug(ex.getMessage());
+            return false;
+        }
+    }
+
+    public synchronized void close() {
+        if (connection == null) {
+            return;
+        }
+
+        try {
+            if (!connection.isClosed()) {
+                connection.close();
+                Messenger.info("SQL connection has been closed successfully.");
+            }
+        } catch (SQLException ex) {
+            Messenger.debug(ex.getMessage());
+            Messenger.warn("Failed to close SQL connection..");
+        }
+    }
+
     private Table getTableByAction(String action) {
         return switch (action.toLowerCase().replaceAll("[-+]", "")) {
             case "all" -> Table.ALL;
@@ -110,55 +143,52 @@ public class CoSQL {
     }
 
     private List<String> getIDSbyNames(String[] names) throws SQLException {
-        if (connection == null) {
+        if (!ensureConnection()) {
             Messenger.warn("Failed to establish a connection to the database..");
-
             return new ArrayList<>();
         }
 
-        if (connection.isClosed())
-            connect();
+        List<String> validNames = Arrays.stream(names)
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .filter(name -> !name.isBlank())
+                .toList();
+
+        if (validNames.isEmpty()) {
+            return new ArrayList<>();
+        }
 
         List<String> userIDS = new ArrayList<>();
 
+        String placeholders = String.join(",", java.util.Collections.nCopies(validNames.size(), "?"));
         String query =
                 "SELECT co_command.user AS ID, cu.user AS NAME " +
                         "FROM co_command " +
                         "LEFT JOIN co_user cu ON co_command.user = cu.rowid " +
-                        "WHERE LOWER(cu.user) IN (";
-
-        StringBuilder sb = new StringBuilder();
-
-        for (String name : names)
-            sb.append("'").append(name).append("',");
-
-        sb.deleteCharAt(sb.length() - 1);
-        sb.append(") GROUP BY ID; ");
-
-        query += sb.toString();
+                        "WHERE LOWER(cu.user) IN (" + placeholders + ") GROUP BY ID";
 
         try (PreparedStatement pst = connection.prepareStatement(query)) {
+            for (int i = 0; i < validNames.size(); i++) {
+                pst.setString(i + 1, validNames.get(i));
+            }
+
             ResultSet result = pst.executeQuery();
 
             while (result.next())
                 userIDS.add(result.getString("ID"));
         }
 
-        Messenger.debug("Joined names: " + String.join(", ", names));
+        Messenger.debug("Joined names: " + String.join(", ", validNames));
         Messenger.debug("User IDS: " + String.join(", ", userIDS));
 
         return userIDS;
     }
 
     public List<String> lookUpData(String[] names, String action, String[] blocks, long time) throws SQLException {
-        if (connection == null) {
+        if (!ensureConnection()) {
             Messenger.warn("Failed to establish a connection to the database..");
-
             return new ArrayList<>();
         }
-
-        if (connection.isClosed())
-            connect();
 
         List<String> results = new ArrayList<>();
 
@@ -191,8 +221,9 @@ public class CoSQL {
 
         Messenger.debug("Looking up for time: " + time);
 
-        if (table == null)
+        if (table == null) {
             return results;
+        }
 
         switch (table) {
             case DROP -> getDropResults(time, results, action, in);
@@ -201,6 +232,9 @@ public class CoSQL {
             case BLOCK -> getBlockResults(blocks, time, results, actionType, in);
             case COMMAND -> getCommandResults(time, results, in);
             case CHAT -> getChatResults(time, results, in);
+            case ENTITY -> {
+                // CoreProtect entity lookups are not implemented yet.
+            }
             case ALL -> {
                 getDropResults(time, results, action, in);
                 getContainerResults(time, results, action, in);
@@ -211,9 +245,6 @@ public class CoSQL {
                 sortResults(results);
             }
         }
-
-        if (!useMySQL)
-            connection.close();
 
         return results;
     }
@@ -258,13 +289,16 @@ public class CoSQL {
 
         int actionType = -1;
 
-        if (action.charAt(0) == '-')
+        if (action.charAt(0) == '-') {
             actionType = 0;
-        if (action.charAt(0) == '+')
+        }
+        if (action.charAt(0) == '+') {
             actionType = 1;
+        }
 
-        if (actionType != -1)
+        if (actionType != -1) {
             query += " AND co_container.action = " + actionType;
+        }
 
         query = query.replace("query_names", in);
 
@@ -290,13 +324,16 @@ public class CoSQL {
 
         int actionType = -1;
 
-        if (action.charAt(0) == '-')
+        if (action.charAt(0) == '-') {
             actionType = 2;
-        if (action.charAt(0) == '+')
+        }
+        if (action.charAt(0) == '+') {
             actionType = 3;
+        }
 
-        if (actionType != -1)
+        if (actionType != -1) {
             query += " AND co_item.action = " + actionType;
+        }
 
         query = query.replace("query_names", in);
 
@@ -331,47 +368,53 @@ public class CoSQL {
                         "WHERE co_block.time > UNIX_TIMESTAMP() - ? " +
                         "AND co_block.user IN ( query_names ) ";
 
-        if (actionType != -1)
+        if (actionType != -1) {
             query += " AND co_block.action = " + actionType;
+        }
 
-        if (!useMySQL)
+        if (!useMySQL) {
             query = query.replace("UNIX_TIMESTAMP()",
                     "strftime('%s', 'now')");
+        }
 
         query = query.replace("query_names", in);
 
-        PreparedStatement pst = connection.prepareStatement(query);
+        try (PreparedStatement pst = connection.prepareStatement(query)) {
+            pst.setLong(1, time);
 
-        pst.setLong(1, time);
+            try (ResultSet result = pst.executeQuery()) {
+                while (result.next()) {
+                    StringBuilder values = new StringBuilder();
 
-        try (ResultSet result = pst.executeQuery()) {
-            while (result.next()) {
-                StringBuilder values = new StringBuilder();
+                    String mat = result.getString("material");
 
-                String mat = result.getString("material");
+                    if (blocks.length != 0) {
+                        boolean skip = Arrays.stream(blocks).noneMatch(bl -> mat.contains(bl.toLowerCase().trim()));
 
-                if (blocks.length != 0) {
-                    boolean skip = Arrays.stream(blocks).noneMatch(bl -> mat.contains(bl.toLowerCase().trim()));
+                        if (skip) {
+                            continue;
+                        }
+                    }
 
-                    if (skip) continue;
+                    getDateAndXYZ(values, result);
+
+                    values.append(result.getString("player"))
+                            .append(" ");
+
+                    int ac = result.getInt("action");
+
+                    if (ac == 0) {
+                        values.append("destroyed ");
+                    }
+
+                    if (ac == 1) {
+                        values.append("placed ");
+                    }
+
+                    values.append(mat);
+
+                    results.add(values.toString());
                 }
-
-                getDateAndXYZ(values, result);
-
-                values.append(result.getString("player"))
-                        .append(" ");
-
-                String ac = result.getString("action");
-
-                if (ac.equals("0"))
-                    values.append("destroyed ");
-
-                if (ac.equals("1"))
-                    values.append("placed ");
-
-                values.append(mat);
-
-                results.add(values.toString());
             }
         }
     }
@@ -391,57 +434,62 @@ public class CoSQL {
                         "WHERE co_session.time > UNIX_TIMESTAMP() - ? " +
                         "AND co_session.user IN ( query_names ) ";
 
-        if (actionType != -1)
+        if (actionType != -1) {
             query += " AND co_session.action = " + actionType;
+        }
 
-        if (!useMySQL)
+        if (!useMySQL) {
             query = query.replace("UNIX_TIMESTAMP()",
                     "strftime('%s', 'now')");
+        }
 
         query = query.replace("query_names", in);
 
-        PreparedStatement pst = connection.prepareStatement(query);
+        try (PreparedStatement pst = connection.prepareStatement(query)) {
+            pst.setLong(1, time);
 
-        pst.setLong(1, time);
+            try (ResultSet result = pst.executeQuery()) {
+                while (result.next()) {
+                    StringBuilder values = new StringBuilder();
 
-        try (ResultSet result = pst.executeQuery()) {
-            while (result.next()) {
-                StringBuilder values = new StringBuilder();
+                    getDateAndXYZ(values, result);
 
-                getDateAndXYZ(values, result);
+                    values.append(result.getString("player"))
+                            .append(" ");
 
-                values.append(result.getString("player"))
-                        .append(" ");
+                    int ac = result.getInt("action");
 
-                String ac = result.getString("action");
+                    if (ac == 0) {
+                        values.append("logged out");
+                    }
+                    if (ac == 1) {
+                        values.append("logged in");
+                    }
 
-                if (ac.equals("0"))
-                    values.append("logged out");
-                if (ac.equals("1"))
-                    values.append("logged in");
-
-                results.add(values.toString());
+                    results.add(values.toString());
+                }
             }
         }
     }
 
     private void getMessageOrCommand(long time, List<String> results, String query) throws SQLException {
-        if (!useMySQL)
+        if (!useMySQL) {
             query = query.replace("UNIX_TIMESTAMP()", "strftime('%s', 'now')");
+        }
 
-        PreparedStatement pst = connection.prepareStatement(query);
+        try (PreparedStatement pst = connection.prepareStatement(query)) {
+            pst.setLong(1, time);
 
-        pst.setLong(1, time);
+            try (ResultSet result = pst.executeQuery()) {
+                while (result.next()) {
+                    StringBuilder values = new StringBuilder();
 
-        try (ResultSet result = pst.executeQuery()) {
-            while (result.next()) {
-                StringBuilder values = new StringBuilder();
+                    getDateAndXYZ(values, result);
 
-                getDateAndXYZ(values, result);
+                    values.append(result.getString("message"));
 
-                values.append(result.getString("message"));
-
-                results.add(values.toString());
+                    results.add(values.toString());
+                }
             }
         }
     }
@@ -465,40 +513,45 @@ public class CoSQL {
     }
 
     private void getResults(List<String> results, String query, long time) throws SQLException {
-        if (!useMySQL)
+        if (!useMySQL) {
             query = query.replace("UNIX_TIMESTAMP()",
                     "strftime('%s', 'now')");
+        }
 
-        PreparedStatement pst = connection.prepareStatement(query);
+        try (PreparedStatement pst = connection.prepareStatement(query)) {
+            pst.setLong(1, time);
 
-        pst.setLong(1, time);
+            try (ResultSet result = pst.executeQuery()) {
+                while (result.next()) {
+                    StringBuilder values = new StringBuilder();
 
-        try (ResultSet result = pst.executeQuery()) {
-            while (result.next()) {
-                StringBuilder values = new StringBuilder();
+                    getDateAndXYZ(values, result);
 
-                getDateAndXYZ(values, result);
+                    values.append(result.getString("player"))
+                            .append(" ");
 
-                values.append(result.getString("player"))
-                        .append(" ");
+                    String ac = result.getString("action");
 
-                String ac = result.getString("action");
+                    if (ac.equals("0")) {
+                        values.append("removed ");
+                    }
+                    if (ac.equals("1")) {
+                        values.append("added ");
+                    }
+                    if (ac.equals("2")) {
+                        values.append("dropped ");
+                    }
+                    if (ac.equals("3")) {
+                        values.append("picked up ");
+                    }
 
-                if (ac.equals("0"))
-                    values.append("removed ");
-                if (ac.equals("1"))
-                    values.append("added ");
-                if (ac.equals("2"))
-                    values.append("dropped ");
-                if (ac.equals("3"))
-                    values.append("picked up ");
+                    values.append(result.getString("amount"))
+                            .append(" ");
 
-                values.append(result.getString("amount"))
-                        .append(" ");
+                    values.append(result.getString("material"));
 
-                values.append(result.getString("material"));
-
-                results.add(values.toString());
+                    results.add(values.toString());
+                }
             }
         }
     }
@@ -516,7 +569,8 @@ public class CoSQL {
 
                     return f.parse(o1).compareTo(f.parse(o2));
                 } catch (ParseException e) {
-                    throw new IllegalArgumentException(e);
+                    Messenger.debug("Failed to parse lookup date while sorting: " + e.getMessage());
+                    return o1.compareTo(o2);
                 }
             }
         });

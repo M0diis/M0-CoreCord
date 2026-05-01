@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Messenger {
-    private static final CoreCord plugin = CoreCord.getInstance();
-
     private final CommandSender receiver;
     private final List<String> msgs;
 
@@ -35,7 +33,8 @@ public class Messenger {
     }
 
     public static void debug(String msg) {
-        if (plugin.getCfg().isDebugEnabled()) {
+        CoreCord plugin = CoreCord.getInstance();
+        if (plugin != null && plugin.getCfg() != null && plugin.getCfg().isDebugEnabled()) {
             String prefix = "&3[&bCoreCord - DEBUG&3]&r ";
 
             Bukkit.getConsoleSender().sendMessage(Utils.format(prefix + msg));
